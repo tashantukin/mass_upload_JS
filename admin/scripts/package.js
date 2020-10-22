@@ -1,7 +1,19 @@
 const scriptSrc = document.currentScript.src;
+const protocol = window.location.protocol;
 const packagePath = scriptSrc.replace("/scripts/package.js", "").trim();
 const apiUrl = packagePath + "/upload.php";
 const apiUrl_createrandom = packagePath + "/create_random.php";
+var baseURL = window.location.hostname;
+        var adminID = $("#userGuid").val();
+        var token = getCookie('webapitoken');
+
+function getCookie(name){
+  var value = '; ' + document.cookie;
+  var parts = value.split('; ' + name + '=');
+  if (parts.length === 2) {
+      return parts.pop().split(';').shift();
+  }
+}
 
 $("body").on("click", "#createrandom", function ()
 {
@@ -28,6 +40,18 @@ function createCSV()
     },
   });
 }
+
+// function addItem(item)
+// {
+//   item.forEach(function (detail)
+//   {
+//     var merchantID = detail[0];
+//     console.log(merchantID);
+//   })
+ 
+// }
+
+
 
 $(document).ready(function ()
 {
@@ -100,7 +124,6 @@ new Vue({
       //for failed results,
       var failed_results = [];
 
-
       var headers = lines[0].split(",");
       vm.parse_header = lines[0].split(",");
 
@@ -162,38 +185,85 @@ new Vue({
       } else {
         alert("FileReader are not supported in this browser.");
       }
+      // console.log(vm.parse_csv);
     },
     onUpload: function ()
     {
       var vm = this;
-      var data = { data: vm.csvcontent };
-      console.log(data);
+     
+      // console.log(vm.csvcontent);
 
+      // var splits = vm.csvcontent[0].split("\n");
+      vm.csvcontent.shift();
+      vm.csvcontent.forEach(function (line)
+      { 
+        var items = line.split("\n");
+        items.forEach(function (item)
+        {
+          var details = item.split(",");
+          // console.log(details);
+          console.log(details[0]);  
+
+          var itemDetails = {
+            'SKU': details[9],
+            'Name': details[2],
+            'BuyerDescription' : details[8],
+            'SellerDescription': details[8],
+            'Price' :  details[11],
+            'PriceUnit' : null,
+            'StockLimited' : details[13],
+            'StockQuantity' : details[12],
+            'IsVisibleToCustomer' : true,
+            'Active' : true,
+            'IsAvailable' :'',
+            'CurrencyCode' : details[10],
+            'Categories': [{ 'ID': details[1] }],
+            'ShippingMethods' : null,
+            'PickupAddresses' : null,
+            'Media':null,
+            'Tags' : null,
+            'CustomFields' : null,
+            'ChildItems' : null
+          }
+          var data = itemDetails;
+          console.log(`${protocol}//${baseURL}/api/v2/merchants/${details[0]}/items/`);
       axios({
         method: "post",
-        url: apiUrl,
-        data: JSON.stringify(data),
-
+        url: `${protocol}//${baseURL}/api/v2/merchants/${details[0]}/items/`,
+        data: data,
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+        
         // config: { headers: {'Content-Type': 'multipart/form-data' }}
       })
         .then((response) =>
         {
-          vm.results = JSON.parse(response.data).result; //original
-          // vm.results = JSON.stringify(response);
-          // console.log(vm.results);
+          // vm.results = JSON.parse(response.data).result; //original
+          vm.results = JSON.stringify(response);
+          console.log('results ' + vm.results);
           $(".data-loader").removeClass("active");
 
-          this.$nextTick(() =>
-          {
-            $(".table").find("tbody tr:last").hide();
-            // Scroll Down
-          });
+          // this.$nextTick(() =>
+          // {
+          //   $(".table").find("tbody tr:last").hide();
+          //   // Scroll Down
+          // });
         })
         .catch(function (response)
         {
           //handle error
           console.log(response);
         });
+
+
+        })
+
+      })
+
+        // splits = splits.split("\n")
+   
+
     },
   },
   watch: {
