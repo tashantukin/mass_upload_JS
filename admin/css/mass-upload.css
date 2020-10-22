@@ -1,0 +1,232 @@
+.icon.icon-mass {	
+	background-image: url(../images/mass.svg);
+}
+.top-note{
+	padding: 15px;
+	background-color: #fff;
+}
+.top-note p a {
+	color: #51c8ff;
+	font-weight: 700;
+}
+.mass-upload-browser {
+	display: inline-block;width: 100%;
+	padding: 25px 30px;
+	background: #fff;
+}
+
+.js .inputfile {
+  width: 0.1px;
+  height: 0.1px;
+  opacity: 0;
+  overflow: hidden;
+  position: absolute;
+  z-index: -1;
+}
+
+.inputfile + label {
+  max-width: 100%;
+  width: auto;
+  font-size: 14px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+  display: flex;
+  overflow: hidden;
+  padding: 0;
+  position: relative;
+}
+
+.no-js .inputfile + label {
+  display: none;
+}
+.inputfile + label .archive-name,
+.inputfile + label .btn-inputfile {
+	display: flex;
+	justify-content: flex-start;
+	align-items: center;
+  height: 35px;
+  font-style: normal;
+}
+
+.inputfile + label .archive-name {
+  
+  
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding-left: 15px;
+  overflow: hidden;
+  font-weight: 400;
+  font-size: 14px;
+  vertical-align: top;
+  color: #919298;
+  width: 230px;
+  height: 35px;
+  border: solid 1px #979797;
+}
+.inputfile + label .btn-inputfile {
+  width: 120px;
+  height: 35px;
+  background-color: #4d4d4d;
+  margin-left: 20px;
+  color: #fff;
+  justify-content: center;
+  align-items: center;
+}
+
+
+input[type="file"] {
+  display: none;
+}
+.browse-element {
+	display: flex;
+	width: auto;
+}
+.d-flex {
+	display: flex;
+	justify-content: flex-start;
+	align-items: center;
+}
+.csv-extractor .thead-dark {
+	background: #4d4d4d;
+	color: #fff;
+	height: 39px;
+	font-size: 12px;
+	border:none;
+}
+.csv-extractor .table > thead > tr > th {
+	vertical-align: middle;
+	border-bottom: 0;
+}
+
+.csv-extractor .table.empty  {
+	height: 300px;
+	
+}
+.csv-extractor {
+	margin-top: 20px;
+	position: relative;
+}
+
+.csv-extractor .table {
+	border:1px solid #979797;
+}
+.upload-section {
+	display: flex;
+	justify-content: flex-start;
+	width: 100%;
+	align-items: center;
+}
+.upload-section span {
+	padding: 0 10px;
+}
+.upload-section span.success {
+	color: #4c9f38;
+}
+.upload-section span.failed {
+	color: #d0021b;
+}
+.upload-section button {
+	width: 150px;
+	height: 40px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	background: #999999;
+	color: #fff;
+	font-size: 14px;
+	font-weight: 700;
+	border:none;
+}
+.csv-extractor {
+	height: 379px;
+	overflow: auto;
+	width: 100%;
+	position: relative;
+	color: #4d4d4d;
+	font-size: 12px;
+}
+.page-topnav .form-group {
+	display: flex;
+	width: 100%;
+	justify-content: flex-start;
+}
+.page-topnav .form-group .btn-inputfileclear {
+  width: 120px;
+  height: 35px;
+  border:1px solid #4d4d4d;
+  margin-left: 10px;
+  color: #4d4d4d;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  font-weight: 700;
+}
+.result-found  {
+	display: flex;
+	align-items: center;
+	margin-left: 10px;
+}
+.mt-30 {
+	margin-top: 30px;
+}
+.upload-section.active button {
+	background: #50c8ff;
+}
+.csv-extractor .table tbody .error {
+	color: #d0021b;
+}
+.csv-extractor .table tbody td  , .csv-extractor .table thead th{
+	white-space: nowrap;
+}
+.csv-extractor .data-loader {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	display: none;justify-content: center;
+	align-items: center;
+	background: rgba(0,0,0,.5);
+	overflow: hidden;
+	z-index: 11;
+}
+.csv-extractor .data-loader.active{
+	display: flex;
+}
+.round-load {
+	height: 150px;
+	width: 150px;
+	border-radius: 100%;
+	border-width: 7px;
+    border-color: #51c8ff transparent;
+	border-style: solid;
+	-webkit-animation: rotation 2s infinite linear;
+}
+@-webkit-keyframes rotation {
+		from {
+				-webkit-transform: rotate(0deg);
+		}
+		to {
+				-webkit-transform: rotate(359deg);
+		}
+}
+@media(max-width: 767px){
+	.inputfile + label , .page-topnav .form-group {
+		flex-wrap: wrap;
+		width: 100%;
+	}
+	.inputfile + label .archive-name {
+		width: calc(100% - 100px);
+		margin-bottom: 15px;
+	}
+	.inputfile + label .btn-inputfile {
+		width: 100px;
+		margin-left: 0;
+	}
+	.page-topnav .form-group .btn-inputfileclear {
+		margin-left: 0;
+	}
+}
+

@@ -1,0 +1,14 @@
+.icon-3x.icon.icon-rrp{background: url(../images/rrp.svg) no-repeat 0 0;background-size: contain;}
+
+
+.btn-info-plug-in {
+    color: #50c8ff;
+    display: block;
+    height: 30px;
+    text-align: right;
+    width: 190px;
+    text-decoration: none;
+    font-weight: bold;
+    font-family: 'Open Sans';
+}
+
