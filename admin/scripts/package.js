@@ -3,9 +3,9 @@ const protocol = window.location.protocol;
 const packagePath = scriptSrc.replace("/scripts/package.js", "").trim();
 const apiUrl = packagePath + "/upload.php";
 const apiUrl_createrandom = packagePath + "/create_random.php";
-var baseURL = window.location.hostname;
-        var adminID = $("#userGuid").val();
-        var token = getCookie('webapitoken');
+const baseURL = window.location.hostname;
+const adminID = $("#userGuid").val();
+const token = getCookie('webapitoken');
 
 function getCookie(name){
   var value = '; ' + document.cookie;
@@ -40,18 +40,6 @@ function createCSV()
     },
   });
 }
-
-// function addItem(item)
-// {
-//   item.forEach(function (detail)
-//   {
-//     var merchantID = detail[0];
-//     console.log(merchantID);
-//   })
- 
-// }
-
-
 
 $(document).ready(function ()
 {
@@ -93,9 +81,10 @@ new Vue({
       sortOrders: {},
       sortKey: "",
       count: "",
-      failedcount: 0,
+      failedcount: 1,
       csvcontent: "",
       results: "",
+      upload_error: []
     };
   },
   filters: {
@@ -116,10 +105,11 @@ new Vue({
       var vm = this;
 
       var lines = csv.split("\n");
+      lines.pop();
       // lines.unshift(counter);
       // csvcontent =  lines.shift();
       vm.count = lines.length - 1;
-      vm.count = vm.count - 1;
+      vm.count = vm.count;
       var result = [];
       //for failed results,
       var failed_results = [];
@@ -170,10 +160,13 @@ new Vue({
         // Handle errors load
         reader.onload = function (event)
         {
+
           var csv = event.target.result;
+         
 
           vm.parse_csv = vm.csvJSON(csv);
-          vm.failedcount - 1;
+        
+          //vm.failedcount - 1;
 
         };
         reader.onerror = function (evt)
@@ -186,6 +179,7 @@ new Vue({
         alert("FileReader are not supported in this browser.");
       }
       // console.log(vm.parse_csv);
+      
     },
     onUpload: function ()
     {
@@ -195,6 +189,7 @@ new Vue({
 
       // var splits = vm.csvcontent[0].split("\n");
       vm.csvcontent.shift();
+      // vm.csvcontent.pop();
       vm.csvcontent.forEach(function (line)
       { 
         var items = line.split("\n");
@@ -203,6 +198,7 @@ new Vue({
           var details = item.split(",");
           // console.log(details);
           console.log(details[0]);  
+         // let upload_error = [];
 
           var itemDetails = {
             'SKU': details[9],
@@ -225,51 +221,63 @@ new Vue({
             'CustomFields' : null,
             'ChildItems' : null
           }
+
           var data = itemDetails;
-          console.log(`${protocol}//${baseURL}/api/v2/merchants/${details[0]}/items/`);
-      axios({
-        method: "post",
-        url: `${protocol}//${baseURL}/api/v2/merchants/${details[0]}/items/`,
-        data: data,
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-        
-        // config: { headers: {'Content-Type': 'multipart/form-data' }}
-      })
-        .then((response) =>
-        {
-          // vm.results = JSON.parse(response.data).result; //original
-          vm.results = JSON.stringify(response);
-          console.log('results ' + vm.results);
-          $(".data-loader").removeClass("active");
 
-          // this.$nextTick(() =>
-          // {
-          //   $(".table").find("tbody tr:last").hide();
-          //   // Scroll Down
-          // });
-        })
-        .catch(function (response)
-        {
-          //handle error
-          console.log(response);
-        });
+          let error_count = 0;
+         
+          //1. Validate empty fields
+          //merchant ID
+          details[0] == '' ? (error_count++, vm.upload_error.push({ 'Name': details[2], 'error': 'Invalid merchant id', 'code': 'Failed' })) : '';
+          // details[2] == '' ? (error_count++, vm.upload_error.push({ 'Name': details[2], 'error': 'Item name is empty', 'code': 'Failed' })) : '';
+          // details[1] == '' ? (error_count++, vm.upload_error.push({ 'Name': details[2], 'error': 'Category is empty', 'code': 'Failed' })) : '';
 
+      
+          if (error_count) {
+           // vm.upload_error = upload_error;
 
+          } else {
+            axios({
+              method: "post",
+              url: `${protocol}//${baseURL}/api/v2/merchants/${details[0]}/items/`,
+              data: data,
+              headers: {
+                'Authorization': `Bearer ${token}`
+              }
+              
+              // config: { headers: {'Content-Type': 'multipart/form-data' }}
+            })
+              .then((response) =>
+              {
+                // vm.results = JSON.parse(response.data).result; //original
+               
+                vm.results = JSON.stringify(response);
+                // console.log('results ' + vm.results);
+                $(".data-loader").removeClass("active");
+                vm.upload_error.push({ 'Name': details[2], 'error': '', 'code': 'Success' })
+      
+               
+              })
+              .catch(function (response)
+              {
+                //handle error
+                console.log(response);
+               
+              });
+          }
+  
         })
 
       })
 
         // splits = splits.split("\n")
    
-
     },
   },
   watch: {
     messages: function (val, oldVal)
     {
-      $(".table").find("tbody tr:last").hide();
+      // $(".table").find("tbody tr:last").hide();
       //Scroll to bottom
     },
   },

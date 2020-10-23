@@ -71,15 +71,15 @@ $all_headers = array_merge($default_headers, $customfield_headers);
 // generate headers
 fputcsv($fh_items, $all_headers);
 
-for ($x = 1; $x <= 1000; $x++) {
+for ($x = 1; $x <= 500; $x++) {
 
   // $itemID = '*';
   $merchants_id = $random_merchant[array_rand($random_merchant)];
   $cats_id = $random_category[array_rand($random_category)];
-  $item_name = 'Sample Item ' . $x;
-  $image_1 = 'https://www.pngkit.com/png/full/129-1298403_upload-files-bank.png';
-  $image_2 = 'https://images.goodsmile.info/cgm/images/product/20200720/9800/72596/large/ecf483c7e31939c37dc3be0d0894811b.jpg';
-  $image_3 = 'sample url link';
+  $item_name = 'Sample new Item ' . time() . $x;
+  $image_1 = 'https://images.goodsmile.info/cgm/images/product/20200603/9605/70411/large/a02d264a54704a52ab991ede87fb7ada.jpg';
+  $image_2 = 'https://images.goodsmile.info/cgm/images/product/20200603/9605/70416/large/8b367d358c9bc977fdd9114f96415ae9.jpg';
+  $image_3 = 'https://images.goodsmile.info/cgm/images/product/20200603/9605/70417/large/b0b61f79f241207aeababea5ae9123a6.jpg';
   $image_4 = 'sample url link';
   $image_5 = 'sample url link';
   $item_desc = 'Item Description ' . $x;

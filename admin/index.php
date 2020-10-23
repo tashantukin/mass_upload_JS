@@ -13,7 +13,7 @@
         <div class="browse-element">
           <div class="form-group">
             <input type="file" name="file-7[]" id="file-7" accept=".csv" class="inputfile" data-multiple-caption="{count} Upload File" multiple @change="loadCSV($event)">
-            <label for="file-7"><span class="archive-name">Upload File</span><span class="btn-inputfile"> Browse</span></label><span class="btn-inputfileclear">Clear</span><span class="result-found" style="color:green">{{ count }} Items Found.</span><span class="result-found" style="color:red">{{ failedcount }} Warning/s (empty Fields).</span>
+            <label for="file-7"><span class="archive-name">Upload File</span><span class="btn-inputfile"> Browse</span></label><span class="btn-inputfileclear">Clear</span><span class="result-found" style="color:green">{{ count }} Items Found.</span><span class="result-found" style="color:red">{{failedcount - 1}} Warning/s (empty Fields).</span>
           </div>
         </div>
       </div>
@@ -60,11 +60,11 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="(item,itemkey) in results">
+        <tr v-for="(item,itemkey) in upload_error">
           <td> {{itemkey + 1}} </td>
           <td> {{ item.Name }} </td>
           <!-- <td> {{ item.Error.length == 0 ? item.Error : 'No Errors' }}  </td> -->
-          <td> {{ item.Error }} </td>
+          <td> {{ item.error }} </td>
           <td> {{ item.code }} </td>
         </tr>
 
