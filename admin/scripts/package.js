@@ -15,10 +15,10 @@ function getCookie(name){
   }
 }
 
-$("body").on("click", "#createrandom", function ()
-{
-  createrandom();
-});
+// $("body").on("click", "#createrandom", function ()
+// {
+//   createrandom();
+// });
 
 function createCSV()
 {
@@ -39,6 +39,50 @@ function createCSV()
       toastr.error("Error!");
     },
   });
+}
+
+
+function isCategoryValid(categoryId)
+{
+  let isValid;
+  axios({
+    method: "GET",
+    url: `${protocol}//${baseURL}/api/v2/categories/`,
+  //  data: data,
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  })
+    .then((response) =>
+    {
+      console.log(response);
+      if (response.data != null) {
+        if (response.data.Records.length != 0) {
+
+          // const ids = Object.values(response.data.Records);
+          // console.log(ids);
+          // const isValid = ids.filter((categoryID) => categoryID.ID === categoryId).shift()
+          // console.log(isValid);
+
+          // if (isValid != undefined) {
+          //   return true;
+          // }
+
+         $.each(response.data.Records, function (index, category)
+        //  response.Records.each( function (index, category)
+          {
+           if (category['ID'] == categoryId) {
+             console.log(categoryId);
+             isValid = true;
+           }
+         //  continue;
+          });
+         
+        }
+      }
+    })
+  
+  return isValid;
 }
 
 $(document).ready(function ()
@@ -63,8 +107,6 @@ $(document).ready(function ()
   {
     $(this).attr("download", "_Failed.csv");
   });
-
-
 });
 
 new Vue({
@@ -136,7 +178,7 @@ new Vue({
           obj[header] = currentline[indexHeader];
         });
 
-        console.log(obj['Item Name']);
+        // console.log(obj['Item Name']);
 
         //validate if item name is empty
         if (obj['Item Name'] == '' || obj['Category ID'] == '' || obj['Merchant ID'] == '' || obj['Price'] == '') {
@@ -196,81 +238,103 @@ new Vue({
         items.forEach(function (item)
         {
           var details = item.split(",");
-          // console.log(details);
-          console.log(details[0]);  
-         // let upload_error = [];
-
-          var itemDetails = {
-            'SKU': details[9],
-            'Name': details[2],
-            'BuyerDescription' : details[8],
-            'SellerDescription': details[8],
-            'Price' :  details[11],
-            'PriceUnit' : null,
-            'StockLimited' : details[13],
-            'StockQuantity' : details[12],
-            'IsVisibleToCustomer' : true,
-            'Active' : true,
-            'IsAvailable' :'',
-            'CurrencyCode' : details[10],
-            'Categories': [{ 'ID': details[1] }],
-            'ShippingMethods' : null,
-            'PickupAddresses' : null,
-            'Media':null,
-            'Tags' : null,
-            'CustomFields' : null,
-            'ChildItems' : null
-          }
-
-          var data = itemDetails;
-
+          
           let error_count = 0;
+          let all_categories = [];
+          let invalid_categories_count = 0;
+          let categories;
+
+
+         !details[1].length == 0  ? categories = (details[1].split('/')) : categories = '';
+          console.log(categories);
+
+          if (categories.length != 0 || categories != undefined || categories != '') {
+            categories.forEach(function (categoryID)
+            // $.each(categories, function (index, categoryID)
+            {
+              console.log(`cat ${categoryID}`);
+              isCategoryValid(categoryID) ? all_categories.push({ 'ID': categoryID }) : invalid_categories_count++;
+            })
+  
+          }
          
           //1. Validate empty fields
-          //merchant ID
-          details[0] == '' ? (error_count++, vm.upload_error.push({ 'Name': details[2], 'error': 'Invalid merchant id', 'code': 'Failed' })) : '';
-          // details[2] == '' ? (error_count++, vm.upload_error.push({ 'Name': details[2], 'error': 'Item name is empty', 'code': 'Failed' })) : '';
-          // details[1] == '' ? (error_count++, vm.upload_error.push({ 'Name': details[2], 'error': 'Category is empty', 'code': 'Failed' })) : '';
-
       
-          if (error_count) {
-           // vm.upload_error = upload_error;
+          switch (true) {
+            case details[0] == '':
+              error_count++
+              vm.upload_error.push({ 'Name': details[2], 'error': 'Invalid merchant id', 'code': 'Failed' })
+              break;
+            case details[1] == '':
+              error_count++
+              vm.upload_error.push({ 'Name': details[2], 'error': 'Category is empty', 'code': 'Failed' })
+              break;
+            
+            case invalid_categories_count != 0:
+              vm.upload_error.push({ 'Name': details[2], 'error': `${invalid_categories_count} invalid category ID'/s.}`, 'code': 'Failed' })
+              break;
+            
+            case details[2] == '':
+              error_count++
+              vm.upload_error.push({ 'Name': details[2], 'error': 'Item name is empty', 'code': 'Failed' })
+              break;
+            case details[11] == '':
+              vm.upload_error.push({ 'Name': details[2], 'error': 'Price is empty', 'code': 'Failed' })
+              break;
+            
+            default:
 
-          } else {
-            axios({
-              method: "post",
-              url: `${protocol}//${baseURL}/api/v2/merchants/${details[0]}/items/`,
-              data: data,
-              headers: {
-                'Authorization': `Bearer ${token}`
+              var itemDetails = {
+                'SKU': details[9],
+                'Name': details[2],
+                'BuyerDescription' : details[8],
+                'SellerDescription': details[8],
+                'Price' :  details[11],
+                'PriceUnit' : null,
+                'StockLimited' : details[13],
+                'StockQuantity' : details[12],
+                'IsVisibleToCustomer' : true,
+                'Active' : true,
+                'IsAvailable' :'',
+                'CurrencyCode' : details[10],
+                'Categories': all_categories,
+                'ShippingMethods' : null,
+                'PickupAddresses' : null,
+                'Media':null,
+                'Tags' : null,
+                'CustomFields' : null,
+                'ChildItems' : null
               }
-              
-              // config: { headers: {'Content-Type': 'multipart/form-data' }}
-            })
-              .then((response) =>
-              {
-                // vm.results = JSON.parse(response.data).result; //original
-               
-                vm.results = JSON.stringify(response);
-                // console.log('results ' + vm.results);
-                $(".data-loader").removeClass("active");
-                vm.upload_error.push({ 'Name': details[2], 'error': '', 'code': 'Success' })
-      
-               
+    
+              var data = itemDetails;
+
+              axios({
+                method: "post",
+                url: `${protocol}//${baseURL}/api/v2/merchants/${details[0]}/items/`,
+                data: data,
+                headers: {
+                  'Authorization': `Bearer ${token}`
+                }
               })
-              .catch(function (response)
-              {
-                //handle error
-                console.log(response);
-               
-              });
+                .then((response) =>
+                {
+                  vm.results = JSON.stringify(response);
+                  $(".data-loader").removeClass("active");
+                  vm.upload_error.push({ 'Name': details[2], 'error': '', 'code': 'Success' })
+                 
+                })
+                .catch(function (response)
+                {
+                  //handle error
+                  console.log(response);
+                 
+                });
+
           }
   
         })
 
       })
-
-        // splits = splits.split("\n")
    
     },
   },

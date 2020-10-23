@@ -71,7 +71,7 @@ $all_headers = array_merge($default_headers, $customfield_headers);
 // generate headers
 fputcsv($fh_items, $all_headers);
 
-for ($x = 1; $x <= 500; $x++) {
+for ($x = 1; $x <= 10; $x++) {
 
   // $itemID = '*';
   $merchants_id = $random_merchant[array_rand($random_merchant)];
