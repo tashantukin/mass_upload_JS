@@ -6,6 +6,8 @@ const apiUrl_createrandom = packagePath + "/create_random.php";
 const baseURL = window.location.hostname;
 const adminID = $("#userGuid").val();
 const token = getCookie('webapitoken');
+var isValid = false;
+let allcategories = [];
 
 function getCookie(name){
   var value = '; ' + document.cookie;
@@ -14,11 +16,6 @@ function getCookie(name){
       return parts.pop().split(';').shift();
   }
 }
-
-// $("body").on("click", "#createrandom", function ()
-// {
-//   createrandom();
-// });
 
 function createCSV()
 {
@@ -40,51 +37,30 @@ function createCSV()
     },
   });
 }
-
-
-function isCategoryValid(categoryId)
+function loadAllCategories()
 {
-  let isValid;
   axios({
     method: "GET",
     url: `${protocol}//${baseURL}/api/v2/categories/`,
-  //  data: data,
     headers: {
       'Authorization': `Bearer ${token}`
     }
-  })
-    .then((response) =>
-    {
-      console.log(response);
-      if (response.data != null) {
-        if (response.data.Records.length != 0) {
+  }).then((response) =>
+  {
+    if (response.data != null) {
+      if (response.data.Records.length != 0) {
 
-          // const ids = Object.values(response.data.Records);
-          // console.log(ids);
-          // const isValid = ids.filter((categoryID) => categoryID.ID === categoryId).shift()
-          // console.log(isValid);
-
-          // if (isValid != undefined) {
-          //   return true;
-          // }
-
-         $.each(response.data.Records, function (index, category)
-        //  response.Records.each( function (index, category)
-          {
-           if (category['ID'] == categoryId) {
-             console.log(categoryId);
-             isValid = true;
-           }
-         //  continue;
-          });
-         
-        }
+       $.each(response.data.Records, function (index, category)
+       {
+         allcategories.push(category['ID']);
+ 
+       });
+       
       }
-    })
-  
-  return isValid;
+     
+    }
+  })
 }
-
 $(document).ready(function ()
 {
   createCSV();
@@ -107,6 +83,8 @@ $(document).ready(function ()
   {
     $(this).attr("download", "_Failed.csv");
   });
+
+  loadAllCategories();
 });
 
 new Vue({
@@ -244,16 +222,15 @@ new Vue({
           let invalid_categories_count = 0;
           let categories;
 
+          console.log(`all categories ${allcategories}`);
 
-         !details[1].length == 0  ? categories = (details[1].split('/')) : categories = '';
+         !details[1].length == 0  ? categories = (details[1].split('/')) : categories = [];
           console.log(categories);
 
           if (categories.length != 0 || categories != undefined || categories != '') {
             categories.forEach(function (categoryID)
-            // $.each(categories, function (index, categoryID)
             {
-              console.log(`cat ${categoryID}`);
-              isCategoryValid(categoryID) ? all_categories.push({ 'ID': categoryID }) : invalid_categories_count++;
+            allcategories.includes(categoryID) ? allcategories.push({ 'ID': categoryID }) : invalid_categories_count++;
             })
   
           }
@@ -269,9 +246,8 @@ new Vue({
               error_count++
               vm.upload_error.push({ 'Name': details[2], 'error': 'Category is empty', 'code': 'Failed' })
               break;
-            
             case invalid_categories_count != 0:
-              vm.upload_error.push({ 'Name': details[2], 'error': `${invalid_categories_count} invalid category ID'/s.}`, 'code': 'Failed' })
+              vm.upload_error.push({ 'Name': details[2], 'error': `${invalid_categories_count} invalid category ID'/s`, 'code': 'Failed' })
               break;
             
             case details[2] == '':
@@ -326,7 +302,7 @@ new Vue({
                 .catch(function (response)
                 {
                   //handle error
-                  console.log(response);
+                 // console.log(response);
                  
                 });
 
