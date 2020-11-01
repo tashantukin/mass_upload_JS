@@ -61,6 +61,9 @@ function loadAllCategories()
     }
   })
 }
+function numberRange (start, end) {
+  return new Array(end - start).fill().map((d, i) => i + start);
+}
 $(document).ready(function ()
 {
   createCSV();
@@ -104,7 +107,10 @@ new Vue({
       failedcount: 1,
       csvcontent: "",
       results: "",
-      upload_error: []
+      upload_error: [],
+      variants_header: [],
+      customfields_header: [],
+      all_variants: []
     };
   },
   filters: {
@@ -185,6 +191,8 @@ new Vue({
          
 
           vm.parse_csv = vm.csvJSON(csv);
+
+          console.log(`all headers ${vm.parse_header}`);
         
           //vm.failedcount - 1;
 
@@ -205,18 +213,29 @@ new Vue({
     {
       var vm = this;
      
-      // console.log(vm.csvcontent);
+        //get Variant's and Cf header indexes
+      vm.parse_header.forEach( (header,index) =>
+      {
+        header.includes('Variant') ? vm.variants_header.push(index) : '';
+        header.includes('Custom') ? vm.customfields_header.push(index) : '';
+      });
+      const last_index = [...vm.variants_header].pop() + 1;
+      const first_index = [...vm.variants_header].shift();
+        
+      console.log(`first ${first_index} last ${last_index}`);
 
-      // var splits = vm.csvcontent[0].split("\n");
+      console.log(vm.variants_header);
+      console.log(vm.customfields_header);
+
       vm.csvcontent.shift();
-      // vm.csvcontent.pop();
       vm.csvcontent.forEach(function (line)
       { 
         var items = line.split("\n");
         items.forEach(function (item)
         {
           var details = item.split(",");
-          
+          vm.all_variants = [];
+
           let error_count = 0;
           let all_categories = [];
           let invalid_categories_count = 0;
@@ -225,15 +244,37 @@ new Vue({
           console.log(`all categories ${allcategories}`);
 
          !details[1].length == 0  ? categories = (details[1].split('/')) : categories = [];
-          console.log(categories);
-
+         
           if (categories.length != 0 || categories != undefined || categories != '') {
             categories.forEach(function (categoryID)
             {
-            allcategories.includes(categoryID) ? allcategories.push({ 'ID': categoryID }) : invalid_categories_count++;
-            })
-  
+              allcategories.includes(categoryID) ? all_categories.push({ 'ID': categoryID }) : invalid_categories_count++;
+            });
           }
+
+          //variants fields
+          console.log(` range ${numberRange(first_index, last_index)}`);
+
+      
+          numberRange(first_index, last_index).forEach(function (variant)
+          {
+            
+            let variants = !details[variant] == 0 ? details[variant].split("/") : null;
+
+            if (variants != null) {
+
+              variants.length == 3 ? vm.all_variants.push({ 'Variants': [{ 'ID': '', 'Name' : variants[1], 'GroupName' : variants[0] }], 'SKU' : 'random', 'Price' : '0', 'StockLimited' : true, 'StockQuantity' : variants[2] }) : '';
+              variants.length == 5 ? vm.all_variants.push({ 'Variants': [{ 'ID': '', 'Name': variants[1], 'GroupName': variants[0] }, { 'ID': '', 'Name': variants[3], 'GroupName': $variants[2] }], 'SKU': 'random', 'Price': '0', 'StockLimited': true, 'StockQuantity': variants[4] }) : '';
+              variants.length == 7 ? vm.all_variants.push({ 'Variants': [{ 'ID': '', 'Name': variants[1], 'GroupName': variants[0] }, { 'ID': '', 'Name': variants[3], 'GroupName': variants[2] }, { 'ID': '', 'Name': variants[5], 'GroupName': variants[4] }], 'SKU': 'random', 'Price': '0', 'StockLimited': true, 'StockQuantity': variants[6] }) : '';
+            }
+          
+          });
+
+          console.log(`all variants ${JSON.stringify(vm.all_variants)}`); 
+          
+          //custom fields
+
+          
          
           //1. Validate empty fields
       
@@ -249,7 +290,6 @@ new Vue({
             case invalid_categories_count != 0:
               vm.upload_error.push({ 'Name': details[2], 'error': `${invalid_categories_count} invalid category ID'/s`, 'code': 'Failed' })
               break;
-            
             case details[2] == '':
               error_count++
               vm.upload_error.push({ 'Name': details[2], 'error': 'Item name is empty', 'code': 'Failed' })
