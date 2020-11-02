@@ -17,7 +17,6 @@ function getCookie(name){
       return parts.pop().split(';').shift();
   }
 }
-
 function createCSV()
 {
   // var data = { startdate: start, enddate: end };
@@ -255,11 +254,6 @@ new Vue({
       const custom_last_index = [...vm.customfields_header].pop() + 1;
       const custom_first_index = [...vm.customfields_header].shift();
         
-
-      console.log(vm.variants_header);
-      console.log(vm.customfields_header);
-      console.log('all cfs ' + JSON.stringify(allcustomfields));
-
       vm.csvcontent.shift();
       vm.csvcontent.forEach(function (line)
       { 
@@ -275,9 +269,6 @@ new Vue({
           let invalid_categories_count = 0;
           let categories;
 
-          // console.log(`all categories ${allcategories}`);
-          console.log(JSON.stringify(allcustomfields));
-
          !details[1].length == 0  ? categories = (details[1].split('/')) : categories = [];
          
           if (categories.length != 0 || categories != undefined || categories != '') {
@@ -287,10 +278,7 @@ new Vue({
             });
           }
 
-          //variants fields
-          // console.log(`range ${numberRange(variant_first_index, variant_last_index)}`);
-
-      
+         //variants
           numberRange(variant_first_index, variant_last_index).forEach(function (variant)
           {
             
@@ -305,8 +293,6 @@ new Vue({
           
           });
 
-          // console.log(`all variants ${JSON.stringify(vm.all_variants)}`); 
-          
           //custom fields
           let custom_counter = 0;
           numberRange(custom_first_index, custom_last_index).forEach(function (customfield)
@@ -319,25 +305,18 @@ new Vue({
             
             !details[customfield] == '' ? customfields_values.push(details[customfield].trim()) : '';
 
-            // console.log(customfields);
-            //allcustomfields = JSON.stringify(allcustomfields);
-           let custom_code = allcustomfields.filter(custom => custom.Name == customfield_name.trim())
+             let custom_code = allcustomfields.filter(custom => custom.Name == customfield_name.trim())
 
-        
-            console.log(`custom code 1 ${custom_code}`);
+             let customfield_code = custom_code.length > 0 ? custom_code[0]['Code'] : '';
 
-            let customfield_code = custom_code.length > 0 ? custom_code[0]['Code'] : '';
+             vm.all_customfields.push({ 'Code' : customfield_code, 'Values' : customfields_values  });
 
-            console.log(`custom code ${customfield_code}`);
-
-            vm.all_customfields.push({ 'Code' : customfield_code, 'Values' : customfields_values  });
-
-            custom_counter++;
+             custom_counter++;
         
           });
-          console.log(`all cf ${JSON.stringify(vm.all_customfields)}`);
           
-         
+          //media
+
           //1. Validate empty fields
       
           switch (true) {
@@ -381,7 +360,7 @@ new Vue({
                 'Media':null,
                 'Tags' : null,
                 'CustomFields' : vm.all_customfields,
-                'ChildItems' : null
+                'ChildItems' : vm.all_variants
               }
     
               var data = itemDetails;
