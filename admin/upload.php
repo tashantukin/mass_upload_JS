@@ -161,6 +161,7 @@ foreach ($csv as $line) {
     //get the custom field code referencing the header name
     $url = $baseUrl . '/api/v2/admins/' . $admin_id . '/custom-field-definitions';
     $result = callAPI("GET", $admin_token['access_token'], $url, false);
+
     foreach ($result['Records'] as $customfields) {
       //validate if the custom field is referenced for Items
       $customfield_name  =  $customfields['Name'];

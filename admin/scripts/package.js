@@ -4,10 +4,11 @@ const packagePath = scriptSrc.replace("/scripts/package.js", "").trim();
 const apiUrl = packagePath + "/upload.php";
 const apiUrl_createrandom = packagePath + "/create_random.php";
 const baseURL = window.location.hostname;
-const adminID = $("#userGuid").val();
+
 const token = getCookie('webapitoken');
 var isValid = false;
 let allcategories = [];
+let allcustomfields = [];
 
 function getCookie(name){
   var value = '; ' + document.cookie;
@@ -61,6 +62,32 @@ function loadAllCategories()
     }
   })
 }
+function loadAllCustomFields()
+{
+  var adminID = $("#userGuid").val();
+  axios({
+    method: "GET",
+    url: `${protocol}//${baseURL}/api/v2/admins/${adminID}/custom-field-definitions`,
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  }).then((response) =>
+  {
+    if (response.data != null) {
+      if (response.data.Records.length != 0) {
+
+        $.each(response.data.Records, function (index, customfield)
+        {
+         customfield['ReferenceTable'] == 'Items' ?  allcustomfields.push( { 'Code' : customfield['Code'], 'Name' : customfield['Name'] }) : '';
+ 
+        });
+       
+      }
+    }
+  })
+ 
+
+}
 function numberRange (start, end) {
   return new Array(end - start).fill().map((d, i) => i + start);
 }
@@ -88,6 +115,7 @@ $(document).ready(function ()
   });
 
   loadAllCategories();
+  loadAllCustomFields();
 });
 
 new Vue({
@@ -110,7 +138,9 @@ new Vue({
       upload_error: [],
       variants_header: [],
       customfields_header: [],
-      all_variants: []
+      all_variants: [],
+      all_customfield_header: [],
+      all_customfields: []
     };
   },
   filters: {
@@ -189,7 +219,6 @@ new Vue({
 
           var csv = event.target.result;
          
-
           vm.parse_csv = vm.csvJSON(csv);
 
           console.log(`all headers ${vm.parse_header}`);
@@ -218,14 +247,18 @@ new Vue({
       {
         header.includes('Variant') ? vm.variants_header.push(index) : '';
         header.includes('Custom') ? vm.customfields_header.push(index) : '';
+        header.includes('Custom') ? vm.all_customfield_header.push(header) : '';
       });
-      const last_index = [...vm.variants_header].pop() + 1;
-      const first_index = [...vm.variants_header].shift();
+      const variant_last_index = [...vm.variants_header].pop() + 1;
+      const variant_first_index = [...vm.variants_header].shift();
+
+      const custom_last_index = [...vm.customfields_header].pop() + 1;
+      const custom_first_index = [...vm.customfields_header].shift();
         
-      console.log(`first ${first_index} last ${last_index}`);
 
       console.log(vm.variants_header);
       console.log(vm.customfields_header);
+      console.log('all cfs ' + JSON.stringify(allcustomfields));
 
       vm.csvcontent.shift();
       vm.csvcontent.forEach(function (line)
@@ -235,13 +268,15 @@ new Vue({
         {
           var details = item.split(",");
           vm.all_variants = [];
+          vm.all_customfields = [];
 
           let error_count = 0;
           let all_categories = [];
           let invalid_categories_count = 0;
           let categories;
 
-          console.log(`all categories ${allcategories}`);
+          // console.log(`all categories ${allcategories}`);
+          console.log(JSON.stringify(allcustomfields));
 
          !details[1].length == 0  ? categories = (details[1].split('/')) : categories = [];
          
@@ -253,10 +288,10 @@ new Vue({
           }
 
           //variants fields
-          console.log(` range ${numberRange(first_index, last_index)}`);
+          // console.log(`range ${numberRange(variant_first_index, variant_last_index)}`);
 
       
-          numberRange(first_index, last_index).forEach(function (variant)
+          numberRange(variant_first_index, variant_last_index).forEach(function (variant)
           {
             
             let variants = !details[variant] == 0 ? details[variant].split("/") : null;
@@ -270,10 +305,37 @@ new Vue({
           
           });
 
-          console.log(`all variants ${JSON.stringify(vm.all_variants)}`); 
+          // console.log(`all variants ${JSON.stringify(vm.all_variants)}`); 
           
           //custom fields
+          let custom_counter = 0;
+          numberRange(custom_first_index, custom_last_index).forEach(function (customfield)
+          {
+         
+            var customfield_name = vm.all_customfield_header[custom_counter];
+            customfield_name = customfield_name.substr(customfield_name.indexOf(" ") + 1).replace(/\s/g, ' ');
+            
+            let customfields_values = [];
+            
+            !details[customfield] == '' ? customfields_values.push(details[customfield].trim()) : '';
 
+            // console.log(customfields);
+            //allcustomfields = JSON.stringify(allcustomfields);
+           let custom_code = allcustomfields.filter(custom => custom.Name == customfield_name.trim())
+
+        
+            console.log(`custom code 1 ${custom_code}`);
+
+            let customfield_code = custom_code.length > 0 ? custom_code[0]['Code'] : '';
+
+            console.log(`custom code ${customfield_code}`);
+
+            vm.all_customfields.push({ 'Code' : customfield_code, 'Values' : customfields_values  });
+
+            custom_counter++;
+        
+          });
+          console.log(`all cf ${JSON.stringify(vm.all_customfields)}`);
           
          
           //1. Validate empty fields
@@ -318,7 +380,7 @@ new Vue({
                 'PickupAddresses' : null,
                 'Media':null,
                 'Tags' : null,
-                'CustomFields' : null,
+                'CustomFields' : vm.all_customfields,
                 'ChildItems' : null
               }
     
