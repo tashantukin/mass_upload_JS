@@ -139,7 +139,8 @@ new Vue({
       customfields_header: [],
       all_variants: [],
       all_customfield_header: [],
-      all_customfields: []
+      all_customfields: [],
+      media: []
     };
   },
   filters: {
@@ -316,6 +317,11 @@ new Vue({
           });
           
           //media
+          numberRange(3, 8).forEach(function (media)
+          {
+            !details[media] == '' ? vm.media.push({'MediaUrl' : details[media] }): '';
+
+          })
 
           //1. Validate empty fields
       
@@ -357,7 +363,7 @@ new Vue({
                 'Categories': all_categories,
                 'ShippingMethods' : null,
                 'PickupAddresses' : null,
-                'Media':null,
+                'Media':vm.media,
                 'Tags' : null,
                 'CustomFields' : vm.all_customfields,
                 'ChildItems' : vm.all_variants
