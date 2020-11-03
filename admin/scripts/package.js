@@ -141,7 +141,8 @@ new Vue({
       all_customfield_header: [],
       all_customfields: [],
       media: [],
-      failed_items: [],
+      failed_items: []
+      //success_upload_items: ['1','2']
     };
   },
   filters: {
@@ -197,7 +198,7 @@ new Vue({
 
         //validate if item name is empty
         if (obj['Item Name'] == '' || obj['Category ID'] == '' || obj['Merchant ID'] == '' || obj['Price'] == '') {
-         failed_results.push(obj);
+          failed_results.push(obj);
           vm.failedcount++;
         }
         result.push(obj);
@@ -242,7 +243,7 @@ new Vue({
     onFailedItem: function (items)
     {
       var vm = this;
-      let data = { 'failed': items, 'headers': vm.parse_header};
+      let data = { 'failed': items, 'headers': vm.parse_header };
       axios({
         method: "POST",
         url: `${packagePath}/download_failed.php`,
@@ -257,11 +258,33 @@ new Vue({
        
       });
     },
+    onSuccess: function (itemID)
+    {
+      var vm = this;
+      let data = { 'items': itemID };
+      axios({
+        method: "POST",
+        url: `${packagePath}/save_imports.php`,
+        data: JSON.stringify(data)
+      }).then((response) =>
+      {
+        console.log(response);
+         
+      }).catch(function (response)
+      {
+        //handle error
+        console.log(response);
+       
+      });
+    },
     onUpload: function ()
     {
       var vm = this;
-        //get Variant's and Cf header indexes
-      vm.parse_header.forEach( (header,index) =>
+      
+      let success_upload_items = [];
+      //let success_upload_items = [];
+      //get Variant's and Cf header indexes
+      vm.parse_header.forEach((header, index) =>
       {
         header.includes('Variant') ? vm.variants_header.push(index) : '';
         header.includes('Custom') ? vm.customfields_header.push(index) : '';
@@ -275,7 +298,7 @@ new Vue({
         
       vm.csvcontent.shift();
       vm.csvcontent.forEach(function (line)
-      { 
+      {
         var items = line.split("\n");
         items.forEach(function (item)
         {
@@ -289,8 +312,9 @@ new Vue({
           let all_categories = [];
           let invalid_categories_count = 0;
           let categories;
+          
 
-         !details[1].length == 0  ? categories = (details[1].split('/')) : categories = [];
+          !details[1].length == 0 ? categories = (details[1].split('/')) : categories = [];
          
           if (categories.length != 0 || categories != undefined || categories != '') {
             categories.forEach(function (categoryID)
@@ -299,7 +323,7 @@ new Vue({
             });
           }
 
-         //variants
+          //variants
           numberRange(variant_first_index, variant_last_index).forEach(function (variant)
           {
             
@@ -308,7 +332,7 @@ new Vue({
             if (variants != null) {
               // vm.variants.push(details[variant]);
 
-              variants.length == 3 ? vm.all_variants.push({ 'Variants': [{ 'ID': '', 'Name' : variants[1], 'GroupName' : variants[0] }], 'SKU' : 'random', 'Price' : '0', 'StockLimited' : true, 'StockQuantity' : variants[2] }) : '';
+              variants.length == 3 ? vm.all_variants.push({ 'Variants': [{ 'ID': '', 'Name': variants[1], 'GroupName': variants[0] }], 'SKU': 'random', 'Price': '0', 'StockLimited': true, 'StockQuantity': variants[2] }) : '';
               variants.length == 5 ? vm.all_variants.push({ 'Variants': [{ 'ID': '', 'Name': variants[1], 'GroupName': variants[0] }, { 'ID': '', 'Name': variants[3], 'GroupName': $variants[2] }], 'SKU': 'random', 'Price': '0', 'StockLimited': true, 'StockQuantity': variants[4] }) : '';
               variants.length == 7 ? vm.all_variants.push({ 'Variants': [{ 'ID': '', 'Name': variants[1], 'GroupName': variants[0] }, { 'ID': '', 'Name': variants[3], 'GroupName': variants[2] }, { 'ID': '', 'Name': variants[5], 'GroupName': variants[4] }], 'SKU': 'random', 'Price': '0', 'StockLimited': true, 'StockQuantity': variants[6] }) : '';
             }
@@ -326,19 +350,19 @@ new Vue({
             
             !details[customfield] == '' ? customfields_values.push(details[customfield].trim()) : '';
 
-             let custom_code = allcustomfields.filter(custom => custom.Name == customfield_name.trim())
+            let custom_code = allcustomfields.filter(custom => custom.Name == customfield_name.trim())
 
-             let customfield_code = custom_code.length > 0 ? custom_code[0]['Code'] : '';
+            let customfield_code = custom_code.length > 0 ? custom_code[0]['Code'] : '';
 
-             vm.all_customfields.push({ 'Code' : customfield_code, 'Values' : customfields_values  });
+            vm.all_customfields.push({ 'Code': customfield_code, 'Values': customfields_values });
 
-             custom_counter++;
+            custom_counter++;
         
           });
           //media
           numberRange(3, 8).forEach(function (media)
           {
-            !details[media] == '' ? vm.media.push({'MediaUrl' : details[media] }): '';
+            !details[media] == '' ? vm.media.push({ 'MediaUrl': details[media] }) : '';
 
           })
 
@@ -373,23 +397,23 @@ new Vue({
               var itemDetails = {
                 'SKU': details[9],
                 'Name': details[2],
-                'BuyerDescription' : details[8],
+                'BuyerDescription': details[8],
                 'SellerDescription': details[8],
-                'Price' :  details[11],
-                'PriceUnit' : null,
-                'StockLimited' : details[13],
-                'StockQuantity' : details[12],
+                'Price': details[11],
+                'PriceUnit': null,
+                'StockLimited': details[13],
+                'StockQuantity': details[12],
                 'IsVisibleToCustomer': true,
-                'Active' : true,
-                'IsAvailable' :'',
-                'CurrencyCode' : details[10],
+                'Active': true,
+                'IsAvailable': '',
+                'CurrencyCode': details[10],
                 'Categories': all_categories,
-                'ShippingMethods' : null,
-                'PickupAddresses' : null,
-                'Media':vm.media,
-                'Tags' : null,
-                'CustomFields' : vm.all_customfields,
-                'ChildItems' : vm.all_variants
+                'ShippingMethods': null,
+                'PickupAddresses': null,
+                'Media': vm.media,
+                'Tags': null,
+                'CustomFields': vm.all_customfields,
+                'ChildItems': vm.all_variants
               }
     
               var data = itemDetails;
@@ -405,6 +429,9 @@ new Vue({
                 .then((response) =>
                 {
                   vm.results = JSON.stringify(response);
+                  // console.log(response.data);
+                  success_upload_items.push(response.data.ID);
+
                   $(".data-loader").removeClass("active");
                   vm.upload_error.push({ 'Name': details[2], 'error': '', 'code': 'Success' })
                 
@@ -412,17 +439,42 @@ new Vue({
                 .catch(function (response)
                 {
                   //handle error
-                 // console.log(response);
-                 
+                  // console.log(response);
                 });
           }
 
         })
        
       })
+      let data = { 'items': success_upload_items };
+      axios({
+        method: "POST",
+        url: `${packagePath}/save_imports.php`,
+        data: JSON.stringify(data)
+      }).then((response) =>
+      {
+        console.log(response);
+         
+      }).catch(function (response)
+      {
+        //handle error
+        console.log(response);
+       
+      });
+
+
+
       //send failed items for download
       vm.onFailedItem(vm.failed_items);
-    },
+      //send successful upload for revert
+      console.log(success_upload_items);
+
+  
+     
+      // vm.onSuccess(success_upload_items);
+    }
+   
+
   },
   watch: {
     messages: function (val, oldVal)
