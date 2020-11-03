@@ -306,7 +306,7 @@ new Vue({
             let variants = !details[variant] == 0 ? details[variant].split("/") : null;
 
             if (variants != null) {
-              vm.variants.push(details[variant]);
+              // vm.variants.push(details[variant]);
 
               variants.length == 3 ? vm.all_variants.push({ 'Variants': [{ 'ID': '', 'Name' : variants[1], 'GroupName' : variants[0] }], 'SKU' : 'random', 'Price' : '0', 'StockLimited' : true, 'StockQuantity' : variants[2] }) : '';
               variants.length == 5 ? vm.all_variants.push({ 'Variants': [{ 'ID': '', 'Name': variants[1], 'GroupName': variants[0] }, { 'ID': '', 'Name': variants[3], 'GroupName': $variants[2] }], 'SKU': 'random', 'Price': '0', 'StockLimited': true, 'StockQuantity': variants[4] }) : '';
@@ -314,12 +314,10 @@ new Vue({
             }
           
           });
-
           //custom fields
           let custom_counter = 0;
           numberRange(custom_first_index, custom_last_index).forEach(function (customfield)
           {
-            vm.customfields.push(details[customfield].trim()); //for failed imports
 
             var customfield_name = vm.all_customfield_header[custom_counter];
             customfield_name = customfield_name.substr(customfield_name.indexOf(" ") + 1).replace(/\s/g, ' ');
