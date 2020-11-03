@@ -140,7 +140,10 @@ new Vue({
       all_variants: [],
       all_customfield_header: [],
       all_customfields: [],
-      media: []
+      media: [],
+      failed_items: [],
+      variants: [], //for failed imports
+      customfields: [] //for failed imports
     };
   },
   filters: {
@@ -238,6 +241,36 @@ new Vue({
       // console.log(vm.parse_csv);
       
     },
+    onFailedItem: function (items)
+    {
+      var vm = this;
+      let data = { 'failed': items, 'headers': vm.parse_header};
+      axios({
+        method: "POST",
+        url: `${packagePath}/download_failed.php`,
+        data: JSON.stringify(data)
+      }).then((response) =>
+      {
+        console.log(response);
+        // if (response.result != null) {
+        //   if (response.result.length != 0) {
+    
+        //     $.each(response.result, function (index, failed)
+        //     {
+        //       console.log(failed);
+              
+        //     });
+           
+        //   }
+        // }
+      }).catch(function (response)
+      {
+        //handle error
+       console.log(response);
+       
+      });
+    },
+
     onUpload: function ()
     {
       var vm = this;
@@ -264,6 +297,8 @@ new Vue({
           var details = item.split(",");
           vm.all_variants = [];
           vm.all_customfields = [];
+          vm.variants = [];
+          vm.customfields = [];
 
           let error_count = 0;
           let all_categories = [];
@@ -286,6 +321,7 @@ new Vue({
             let variants = !details[variant] == 0 ? details[variant].split("/") : null;
 
             if (variants != null) {
+              vm.variants.push(details[variant]);
 
               variants.length == 3 ? vm.all_variants.push({ 'Variants': [{ 'ID': '', 'Name' : variants[1], 'GroupName' : variants[0] }], 'SKU' : 'random', 'Price' : '0', 'StockLimited' : true, 'StockQuantity' : variants[2] }) : '';
               variants.length == 5 ? vm.all_variants.push({ 'Variants': [{ 'ID': '', 'Name': variants[1], 'GroupName': variants[0] }, { 'ID': '', 'Name': variants[3], 'GroupName': $variants[2] }], 'SKU': 'random', 'Price': '0', 'StockLimited': true, 'StockQuantity': variants[4] }) : '';
@@ -298,7 +334,8 @@ new Vue({
           let custom_counter = 0;
           numberRange(custom_first_index, custom_last_index).forEach(function (customfield)
           {
-         
+            vm.customfields.push(details[customfield].trim()); //for failed imports
+
             var customfield_name = vm.all_customfield_header[custom_counter];
             customfield_name = customfield_name.substr(customfield_name.indexOf(" ") + 1).replace(/\s/g, ' ');
             
@@ -315,7 +352,6 @@ new Vue({
              custom_counter++;
         
           });
-          
           //media
           numberRange(3, 8).forEach(function (media)
           {
@@ -324,25 +360,29 @@ new Vue({
           })
 
           //1. Validate empty fields
-      
           switch (true) {
             case details[0] == '':
               error_count++
               vm.upload_error.push({ 'Name': details[2], 'error': 'Invalid merchant id', 'code': 'Failed' })
+              vm.failed_items.push(item.split(","));
               break;
             case details[1] == '':
               error_count++
               vm.upload_error.push({ 'Name': details[2], 'error': 'Category is empty', 'code': 'Failed' })
+              vm.failed_items.push(item.split(","));
               break;
             case invalid_categories_count != 0:
               vm.upload_error.push({ 'Name': details[2], 'error': `${invalid_categories_count} invalid category ID'/s`, 'code': 'Failed' })
+              vm.failed_items.push(item.split(","));
               break;
             case details[2] == '':
               error_count++
               vm.upload_error.push({ 'Name': details[2], 'error': 'Item name is empty', 'code': 'Failed' })
+              vm.failed_items.push(item.split(","));
               break;
             case details[11] == '':
               vm.upload_error.push({ 'Name': details[2], 'error': 'Price is empty', 'code': 'Failed' })
+              vm.failed_items.push(item.split(","));
               break;
             
             default:
@@ -356,7 +396,7 @@ new Vue({
                 'PriceUnit' : null,
                 'StockLimited' : details[13],
                 'StockQuantity' : details[12],
-                'IsVisibleToCustomer' : true,
+                'IsVisibleToCustomer': true,
                 'Active' : true,
                 'IsAvailable' :'',
                 'CurrencyCode' : details[10],
@@ -382,9 +422,10 @@ new Vue({
                 .then((response) =>
                 {
                   vm.results = JSON.stringify(response);
-                  $(".data-loader").removeClass("active");
+              
                   vm.upload_error.push({ 'Name': details[2], 'error': '', 'code': 'Success' })
-                 
+                  // console.log(`failed items ${vm.failed_items}`);
+                
                 })
                 .catch(function (response)
                 {
@@ -392,13 +433,16 @@ new Vue({
                  // console.log(response);
                  
                 });
+               
 
           }
-  
-        })
 
+        })
+        //pass failed items after the loop
+       
       })
-   
+      $(".data-loader").removeClass("active");
+      vm.onFailedItem(vm.failed_items);
     },
   },
   watch: {
