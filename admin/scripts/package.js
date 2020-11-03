@@ -142,8 +142,6 @@ new Vue({
       all_customfields: [],
       media: [],
       failed_items: [],
-      variants: [], //for failed imports
-      customfields: [] //for failed imports
     };
   },
   filters: {
@@ -252,29 +250,16 @@ new Vue({
       }).then((response) =>
       {
         console.log(response);
-        // if (response.result != null) {
-        //   if (response.result.length != 0) {
-    
-        //     $.each(response.result, function (index, failed)
-        //     {
-        //       console.log(failed);
-              
-        //     });
-           
-        //   }
-        // }
+         
       }).catch(function (response)
       {
         //handle error
-       console.log(response);
        
       });
     },
-
     onUpload: function ()
     {
       var vm = this;
-     
         //get Variant's and Cf header indexes
       vm.parse_header.forEach( (header,index) =>
       {
@@ -422,9 +407,8 @@ new Vue({
                 .then((response) =>
                 {
                   vm.results = JSON.stringify(response);
-              
+                  $(".data-loader").removeClass("active");
                   vm.upload_error.push({ 'Name': details[2], 'error': '', 'code': 'Success' })
-                  // console.log(`failed items ${vm.failed_items}`);
                 
                 })
                 .catch(function (response)
@@ -433,15 +417,12 @@ new Vue({
                  // console.log(response);
                  
                 });
-               
-
           }
 
         })
-        //pass failed items after the loop
        
       })
-      $(".data-loader").removeClass("active");
+      //send failed items for download
       vm.onFailedItem(vm.failed_items);
     },
   },
