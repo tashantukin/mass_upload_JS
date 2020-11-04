@@ -84,7 +84,6 @@ function loadAllCustomFields()
       }
     }
   })
- 
 
 }
 function numberRange (start, end) {

@@ -7,7 +7,6 @@ $fh_items = fopen($dirItems, 'w');
 echo json_encode(['result' => $items_id]);
 
 
-
 foreach ($items_id as $id) {
     fputcsv($fh_items, $id);
 }
