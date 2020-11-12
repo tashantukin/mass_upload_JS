@@ -9,6 +9,7 @@ const token = getCookie('webapitoken');
 var isValid = false;
 let allcategories = [];
 let allcustomfields = [];
+let success_upload = [];
 
 function getCookie(name){
   var value = '; ' + document.cookie;
@@ -140,8 +141,8 @@ new Vue({
       all_customfield_header: [],
       all_customfields: [],
       media: [],
-      failed_items: []
-      //success_upload_items: ['1','2']
+      failed_items: [],
+      item_success: []
     };
   },
   filters: {
@@ -156,6 +157,9 @@ new Vue({
       var vm = this;
       vm.sortKey = key;
       vm.sortOrders[key] = vm.sortOrders[key] * -1;
+    },
+    mounted () {
+      // Your JQuery code here
     },
     csvJSON(csv)
     {
@@ -212,6 +216,7 @@ new Vue({
     {
       var vm = this;
       if (window.FileReader) {
+        vm.failedcount = 1 //when new csv is uploaded, set the failed count to 1 again
         var reader = new FileReader();
         reader.readAsText(e.target.files[0]);
         // Handle errors load
@@ -236,6 +241,9 @@ new Vue({
       } else {
         alert("FileReader are not supported in this browser.");
       }
+      vm.upload_error = [];
+      var rowpos = $('#item_list tr:last').position();
+      $('.csv-extractor').scrollTop(rowpos.top);
       // console.log(vm.parse_csv);
       
     },
@@ -257,9 +265,9 @@ new Vue({
        
       });
     },
-    onSuccess: function (itemID)
+    onItemSuccess: function (itemID)
     {
-      var vm = this;
+      // var vm = this;
       let data = { 'items': itemID };
       axios({
         method: "POST",
@@ -280,7 +288,11 @@ new Vue({
     {
       var vm = this;
       
-      let success_upload_items = [];
+      var rowpos = $('#item_list tr:first').position();
+      $('.csv-extractor').scrollTop(rowpos.top);
+      //disable the table
+      $(".csv-extractor").prop("disabled", true);
+      // $(".data-loader").addClass("active");
       //let success_upload_items = [];
       //get Variant's and Cf header indexes
       vm.parse_header.forEach((header, index) =>
@@ -296,9 +308,12 @@ new Vue({
       const custom_first_index = [...vm.customfields_header].shift();
         
       vm.csvcontent.shift();
+      // vm.success_upload_items = [];
+     var itemcount = 0;
       vm.csvcontent.forEach(function (line)
       {
         var items = line.split("\n");
+
         items.forEach(function (item)
         {
           var details = item.split(",");
@@ -312,7 +327,6 @@ new Vue({
           let invalid_categories_count = 0;
           let categories;
           
-
           !details[1].length == 0 ? categories = (details[1].split('/')) : categories = [];
          
           if (categories.length != 0 || categories != undefined || categories != '') {
@@ -429,9 +443,9 @@ new Vue({
                 {
                   vm.results = JSON.stringify(response);
                   // console.log(response.data);
-                  success_upload_items.push(response.data.ID);
+                  success_upload.push(response.data.ID);
 
-                  $(".data-loader").removeClass("active");
+                  
                   vm.upload_error.push({ 'Name': details[2], 'error': '', 'code': 'Success' })
                 
                 })
@@ -441,43 +455,38 @@ new Vue({
                   // console.log(response);
                 });
           }
-
+        
         })
+        itemcount++;
+        console.log(`${itemcount} ${vm.count}`);
+        
+        if (itemcount == vm.count) {
+          console.log('equal')
+          var elements = document.getElementsByClassName('data-loader');
+         console.log(elements);
+          elements[0].classList.remove("active");
+                 //   $(".data-loader").removeClass("active");
+         }
        
       })
-      let data = { 'items': success_upload_items };
-      axios({
-        method: "POST",
-        url: `${packagePath}/save_imports.php`,
-        data: JSON.stringify(data)
-      }).then((response) =>
-      {
-        console.log(response);
-         
-      }).catch(function (response)
-      {
-        //handle error
-        console.log(response);
-       
-      });
 
-
-
+    
+      console.log(success_upload);
+     
       //send failed items for download
       vm.onFailedItem(vm.failed_items);
+      vm.onItemSuccess(success_upload);
       //send successful upload for revert
-      console.log(success_upload_items);
-
-  
+      console.log('success ' + success_upload);
      
       // vm.onSuccess(success_upload_items);
     }
    
-
   },
   watch: {
     messages: function (val, oldVal)
     {
+      
       // $(".table").find("tbody tr:last").hide();
       //Scroll to bottom
     },

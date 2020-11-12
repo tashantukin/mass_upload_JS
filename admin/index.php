@@ -18,7 +18,7 @@
         </div>
       </div>
       <div class="table-responsive csv-extractor">
-        <table class="table" v-if='parse_csv'>
+        <table class="table" v-if='parse_csv' id="item_list">
           <thead class="thead-dark">
             <tr>
               <!-- <th v-for="(key,itemkey) in parse_header"> {{itemkey + 1}} </th> -->
@@ -79,8 +79,6 @@
 <div class="clearfix"></div>
 </div>
 
-
-
 <!-- </div>  -->
 <script type="text/javascript" src="https://bootstrap.arcadier.com/adminportal/js/jquery-1.11.3.min.js"></script>
 <script type="text/javascript">
@@ -122,9 +120,9 @@
     $("body").on("click", ".upload-section.active button", function() {
       $(".data-loader").addClass("active");
     });
-    setTimeout(function() {
-      $('.data-loader').removeClass('active')
-    }, 3000);
+    // setTimeout(function() {
+    //   $('.data-loader').removeClass('active')
+    // }, 3000);
     $("body").on("click", ".btn-inputfileclear", function() {
       $(".csv-extractor .table tbody tr").remove();
       $(".csv-extractor .table tbody").html("<tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>");

@@ -78,7 +78,6 @@ $custom_end_index = $custom_end[2];
 $headers_indexes[] = $custom_end_index;
 
 //header management ends
-
 //Variants header management
 $variants_line = [];
 $variants_indexes = [];
@@ -180,7 +179,6 @@ foreach ($csv as $line) {
   //validate empty fields, 
   // do not upload
   // generate csv files for failed items
-
   if ($line[0] == '' || $line[2] == '' || $line[11] == '' || $line[1] == '') {
     if ($line[1] == '') {
       $upload_error[] = '';
@@ -191,7 +189,6 @@ foreach ($csv as $line) {
     $upload_result[0]['Total'] = $upload_counter;
 
     $upload_result[] = array('Name' => $line[2], 'Error' => $upload_error, 'code' =>  'Failed');
-
 
     // generate csv files for failed items
     //add all item fields
@@ -242,7 +239,6 @@ foreach ($csv as $line) {
     $url =  $baseUrl . '/api/v2/merchants/' . $line[0] . '/items';
     $result =  callAPI("POST", $admin_token['access_token'], $url, $item_details);
     $result1 = json_encode(['err' => $result]);
-
 
     $upload_counter++;
     $itemresult =  array_key_exists("Message", $result) ? $result['InnerErrors'][0]['Message'] : 'Success'; //if meerchant ID is invalid
