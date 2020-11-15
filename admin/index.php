@@ -36,7 +36,7 @@
             </tr>
           </tbody>
         </table>
-        <div class="data-loader">
+        <div class="data-loader" :class=" current_count == count ? { active : false} : '' ">
           <div class="round-load"></div>
         </div>
       </div>
@@ -45,7 +45,11 @@
       <button v-on:click=onUpload>Upload</button>
     </div>
     <div class="upload-section mt-30 active">
-      <p>Failed Uploads.</p> <a href="#" id="download_failed"> Download failed imports.</a>
+      <p>Failed:<span class="result-found" style="color:red">{{ failed_all }}</span> <a href="#" id="download_failed"> Download failed imports.</a> </p>
+      <p>Success: <span class="result-found" style="color:green">{{ success_all }}</span> <a href="#" id=""> Download success imports.</a></p>
+    </div>
+    <div class="upload-section mt-30 active">
+
     </div>
   </div>
 
@@ -118,11 +122,14 @@
   })(jQuery, window, document);
   $(document).ready(function() {
     $("body").on("click", ".upload-section.active button", function() {
-      $(".data-loader").addClass("active");
+      // console.log('start');
+      // $(".data-loader").addClass("active");
     });
-    // setTimeout(function() {
-    //   $('.data-loader').removeClass('active')
-    // }, 3000);
+    setTimeout(function() {
+      console.log('end');
+      // $('.data-loader').removeClass('active')
+    }, 3000);
+
     $("body").on("click", ".btn-inputfileclear", function() {
       $(".csv-extractor .table tbody tr").remove();
       $(".csv-extractor .table tbody").html("<tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>");

@@ -9,7 +9,6 @@ const token = getCookie('webapitoken');
 var isValid = false;
 let allcategories = [];
 let allcustomfields = [];
-let success_upload = [];
 
 function getCookie(name){
   var value = '; ' + document.cookie;
@@ -131,6 +130,7 @@ new Vue({
       sortOrders: {},
       sortKey: "",
       count: "",
+      current_count: 0,
       failedcount: 1,
       csvcontent: "",
       results: "",
@@ -142,7 +142,13 @@ new Vue({
       all_customfields: [],
       media: [],
       failed_items: [],
-      item_success: []
+      item_success: [], 
+      success_all: 0,
+      failed_all: 0,
+      isActive: false,
+      isUpload: "",
+      success_upload: []
+      
     };
   },
   filters: {
@@ -158,9 +164,27 @@ new Vue({
       vm.sortKey = key;
       vm.sortOrders[key] = vm.sortOrders[key] * -1;
     },
-    mounted () {
-      // Your JQuery code here
-    },
+    async asyncFunc(merchantID, data)
+    {
+      try {
+        vm = this;
+        const response = await axios({
+          method: "post",
+          url: `${protocol}//${baseURL}/api/v2/merchants/${merchantID}/items/`,
+          data: data,
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
+        const items = await response
+   
+
+        return items
+      } catch (error) {
+        console.log("error", error);
+      }
+      },
+
     csvJSON(csv)
     {
       var vm = this;
@@ -242,10 +266,38 @@ new Vue({
         alert("FileReader are not supported in this browser.");
       }
       vm.upload_error = [];
-      var rowpos = $('#item_list tr:last').position();
-      $('.csv-extractor').scrollTop(rowpos.top);
+      // var rowpos = $('#item_list tr:last').position();
+      // $('.csv-extractor').scrollTop(rowpos.top);
       // console.log(vm.parse_csv);
       
+    },
+    onRevert()
+    {
+
+      axios.get(`${packagePath}/revert_upload.php`)
+      .then(function (response) {
+        console.log(response.result);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+
+      // var vm = this;
+      // console.log();
+      // $.ajax({
+      //   url: `${packagePath}/revert_upload.php`,
+      //   dataType: 'text',
+      //   error: function (jqXHR, status, err)
+      //   {
+      //     toastr.error(err);
+      //   }
+      // }).done(vm.onDelete)
+      //   .catch(error);
+    },
+    onDelete(data)
+    {
+      var allRows = data.split(/\r?\n|\r/);
+      console.log(allRows);
     },
     onFailedItem: function (items)
     {
@@ -267,7 +319,6 @@ new Vue({
     },
     onItemSuccess: function (itemID)
     {
-      // var vm = this;
       let data = { 'items': itemID };
       axios({
         method: "POST",
@@ -276,6 +327,7 @@ new Vue({
       }).then((response) =>
       {
         console.log(response);
+        vm.onRevert();
          
       }).catch(function (response)
       {
@@ -287,12 +339,13 @@ new Vue({
     onUpload: function ()
     {
       var vm = this;
-      
+      vm.isUpload = true
       var rowpos = $('#item_list tr:first').position();
       $('.csv-extractor').scrollTop(rowpos.top);
+
       //disable the table
       $(".csv-extractor").prop("disabled", true);
-      // $(".data-loader").addClass("active");
+      $(".data-loader").addClass("active");
       //let success_upload_items = [];
       //get Variant's and Cf header indexes
       vm.parse_header.forEach((header, index) =>
@@ -309,13 +362,21 @@ new Vue({
         
       vm.csvcontent.shift();
       // vm.success_upload_items = [];
-     var itemcount = 0;
+      var allPromises = [];
       vm.csvcontent.forEach(function (line)
       {
+        
         var items = line.split("\n");
-
+        
         items.forEach(function (item)
         {
+          vm.isActive = true
+          console.log(vm.isActive);
+
+          vm.current_count++;
+          console.log(`${vm.current_count} ${vm.count}`);
+
+          
           var details = item.split(",");
           vm.all_variants = [];
           vm.all_customfields = [];
@@ -385,24 +446,29 @@ new Vue({
               error_count++
               vm.upload_error.push({ 'Name': details[2], 'error': 'Invalid merchant id', 'code': 'Failed' })
               vm.failed_items.push(item.split(","));
+              vm.failed_all++;
               break;
             case details[1] == '':
               error_count++
               vm.upload_error.push({ 'Name': details[2], 'error': 'Category is empty', 'code': 'Failed' })
               vm.failed_items.push(item.split(","));
+              vm.failed_all++;
               break;
             case invalid_categories_count != 0:
               vm.upload_error.push({ 'Name': details[2], 'error': `${invalid_categories_count} invalid category ID'/s`, 'code': 'Failed' })
               vm.failed_items.push(item.split(","));
+              vm.failed_all++;
               break;
             case details[2] == '':
               error_count++
               vm.upload_error.push({ 'Name': details[2], 'error': 'Item name is empty', 'code': 'Failed' })
               vm.failed_items.push(item.split(","));
+              vm.failed_all++;
               break;
             case details[11] == '':
               vm.upload_error.push({ 'Name': details[2], 'error': 'Price is empty', 'code': 'Failed' })
               vm.failed_items.push(item.split(","));
+              vm.failed_all++;
               break;
             
             default:
@@ -428,65 +494,45 @@ new Vue({
                 'CustomFields': vm.all_customfields,
                 'ChildItems': vm.all_variants
               }
-    
-              var data = itemDetails;
+              
+              var itemdata = itemDetails;
+           
+              allPromises.push(vm.asyncFunc(details[0], itemdata));
 
-              axios({
-                method: "post",
-                url: `${protocol}//${baseURL}/api/v2/merchants/${details[0]}/items/`,
-                data: data,
-                headers: {
-                  'Authorization': `Bearer ${token}`
-                }
-              })
-                .then((response) =>
-                {
-                  vm.results = JSON.stringify(response);
-                  // console.log(response.data);
-                  success_upload.push(response.data.ID);
+              vm.success_all++;
 
-                  
-                  vm.upload_error.push({ 'Name': details[2], 'error': '', 'code': 'Success' })
-                
-                })
-                .catch(function (response)
-                {
-                  //handle error
-                  // console.log(response);
-                });
+              vm.upload_error.push({ 'Name': details[2], 'error': '', 'code': 'Success' })
+
           }
         
         })
-        itemcount++;
-        console.log(`${itemcount} ${vm.count}`);
-        
-        if (itemcount == vm.count) {
-          console.log('equal')
-          var elements = document.getElementsByClassName('data-loader');
-         console.log(elements);
-          elements[0].classList.remove("active");
-                 //   $(".data-loader").removeClass("active");
-         }
-       
-      })
-
     
-      console.log(success_upload);
-     
-      //send failed items for download
+      })
+      var promises = Promise.all(allPromises);
+      promises.then(function(data) {
+        console.log('All done');
+        $(".data-loader").removeClass("active")
+        data.forEach(function (text)
+        {
+          vm.success_upload.push(text.data.ID);
+        });
+        
+      // send successful upload for revert
+        vm.onItemSuccess(vm.success_upload);
+      });
+
+
+    //send failed items for download
       vm.onFailedItem(vm.failed_items);
-      vm.onItemSuccess(success_upload);
-      //send successful upload for revert
-      console.log('success ' + success_upload);
      
-      // vm.onSuccess(success_upload_items);
+     
     }
-   
   },
+ 
   watch: {
     messages: function (val, oldVal)
     {
-      
+    
       // $(".table").find("tbody tr:last").hide();
       //Scroll to bottom
     },
