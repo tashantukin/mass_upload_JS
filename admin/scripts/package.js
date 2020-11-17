@@ -164,27 +164,33 @@ new Vue({
       vm.sortKey = key;
       vm.sortOrders[key] = vm.sortOrders[key] * -1;
     },
-    async asyncFunc(merchantID, data)
+    parseCSV: function (data)
+    {
+      var allTextLines = data.split(/\r\n|\n/);
+      var entries = allTextLines[0].split(',');
+      console.log(entries);
+      return entries;
+    },
+    async callItemsAPI(merchantID, data, action)
     {
       try {
         vm = this;
         const response = await axios({
-          method: "post",
-          url: `${protocol}//${baseURL}/api/v2/merchants/${merchantID}/items/`,
+          method: action,
+          url: action == 'POST' ? `${protocol}//${baseURL}/api/v2/merchants/${merchantID}/items/` : `${protocol}//${baseURL}/api/v2/merchants/${merchantID}/items/${data}`,
           data: data,
           headers: {
             'Authorization': `Bearer ${token}`
           }
         })
         const items = await response
-   
-
+        console.log('res ' + JSON.stringify(items));
         return items
+       
       } catch (error) {
         console.log("error", error);
       }
       },
-
     csvJSON(csv)
     {
       var vm = this;
@@ -273,31 +279,35 @@ new Vue({
     },
     onRevert()
     {
-
-      axios.get(`${packagePath}/revert_upload.php`)
-      .then(function (response) {
-        console.log(response.result);
-      })
-      .catch(function (error) {
-        console.log(error);
-      });
-
-      // var vm = this;
-      // console.log();
-      // $.ajax({
-      //   url: `${packagePath}/revert_upload.php`,
-      //   dataType: 'text',
-      //   error: function (jqXHR, status, err)
-      //   {
-      //     toastr.error(err);
-      //   }
-      // }).done(vm.onDelete)
-      //   .catch(error);
+      var vm = this;
+      $.ajax({
+        type: "GET",
+        url: `${packagePath}/downloads?file=uploaded_items.csv&contentType=text/csv`,
+        dataType: "text",
+        success: function (data)
+        {
+          let itemIDs = vm.parseCSV(data);
+          //delete the items
+          vm.onDelete(itemIDs);
+        },
+        error: function (jqXHR, status, err)
+        {
+          console.log(err);
+        }
+     });
     },
     onDelete(data)
     {
-      var allRows = data.split(/\r?\n|\r/);
-      console.log(allRows);
+      var vm = this;
+      data.forEach((item) =>
+      {
+        console.log(item);
+        let itemInfo = item.split("/");
+        console.log(itemInfo[0], itemInfo[1]);
+
+        vm.callItemsAPI(itemInfo[1], itemInfo[0], "DELETE")
+    
+      });
     },
     onFailedItem: function (items)
     {
@@ -327,13 +337,12 @@ new Vue({
       }).then((response) =>
       {
         console.log(response);
-        vm.onRevert();
+      //  vm.onRevert();
          
       }).catch(function (response)
       {
         //handle error
-        console.log(response);
-       
+        console.log(response);     
       });
     },
     onUpload: function ()
@@ -371,12 +380,8 @@ new Vue({
         items.forEach(function (item)
         {
           vm.isActive = true
-          console.log(vm.isActive);
-
           vm.current_count++;
-          console.log(`${vm.current_count} ${vm.count}`);
-
-          
+      
           var details = item.split(",");
           vm.all_variants = [];
           vm.all_customfields = [];
@@ -497,7 +502,7 @@ new Vue({
               
               var itemdata = itemDetails;
            
-              allPromises.push(vm.asyncFunc(details[0], itemdata));
+              allPromises.push(vm.callItemsAPI(details[0], itemdata, "POST"));
 
               vm.success_all++;
 
@@ -514,7 +519,7 @@ new Vue({
         $(".data-loader").removeClass("active")
         data.forEach(function (text)
         {
-          vm.success_upload.push(text.data.ID);
+          vm.success_upload.push(`${text.data.ID}/${text.data.MerchantDetail.ID}`);
         });
         
       // send successful upload for revert
@@ -528,11 +533,9 @@ new Vue({
      
     }
   },
- 
   watch: {
     messages: function (val, oldVal)
     {
-    
       // $(".table").find("tbody tr:last").hide();
       //Scroll to bottom
     },

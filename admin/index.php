@@ -54,6 +54,7 @@
   </div>
 
   <div class="table-responsive csv-extractor">
+    <p><a href="#" id="" v-on:click=onRevert> Undo last import</a></p>
     <table class="table">
       <thead class="thead-dark">
         <tr>
