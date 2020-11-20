@@ -5,8 +5,8 @@
 <div class="page-content" id="app">
   <div class="top-note page-topnav">
     <p>Mass upload items to your marketplace using the special csv. <a href="#" id="formatlink">Get the format here.</a></p>
-
   </div>
+
   <div class="page-topnav secondnary-topnav">
     <div class="mass-upload-browser">
       <div class="d-flex">
@@ -41,46 +41,73 @@
         </div>
       </div>
     </div>
-    <div class="upload-section mt-30 active">
-      <button v-on:click=onUpload>Upload</button>
-    </div>
-    <div class="upload-section mt-30 active">
-      <p>Failed:<span class="result-found" style="color:red">{{ failed_all }}</span> <a href="#" id="download_failed"> Download failed imports.</a> </p>
-      <p>Success: <span class="result-found" style="color:green">{{ success_all }}</span> <a href="#" id=""> Download success imports.</a></p>
-    </div>
-    <div class="upload-section mt-30 active">
 
-    </div>
+      <div class="upload-section mt-30 active">
+        <button v-on:click=onUpload>Upload</button>
+        <span>Total Item Uploaded: {{ count }}  Items</span>
+
+        <span class="success">Success: {{ success_all }} </span>
+
+        <span class="failed">Failed: {{ failed_all }} </span>
+
+      </div>
+  
+
+    <!-- </div> -->
   </div>
 
-  <div class="table-responsive csv-extractor">
-    <p><a href="#" id="" v-on:click=onRevert> Undo last import</a></p>
-    <table class="table">
-      <thead class="thead-dark">
-        <tr>
-          <th> Count</th>
-          <th> Item Name</th>
-          <th> Upload Errors</th>
-          <th> Upload Result</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="(item,itemkey) in upload_error">
-          <td> {{itemkey + 1}} </td>
-          <td> {{ item.Name }} </td>
-          <!-- <td> {{ item.Error.length == 0 ? item.Error : 'No Errors' }}  </td> -->
-          <td> {{ item.error }} </td>
-          <td> {{ item.code }} </td>
-        </tr>
+    <div class="page-topnav secondnary-topnav mt-30">
+        <div class="mass-upload-browser"> 
 
-      </tbody>
-    </table>
-  </div>
+          <div class="d-flex">
 
+            <div class="status-container">
+
+              <span class="success">Success: {{ success_all }} </span>
+
+              <a href="#">Download successful imports</a>
+
+              <span class="failed">Failed: {{ failed_all }}</span>
+
+              <a href="#" id="download_failed">Download failed imports</a>
+
+            </div>
+
+          </div>
+
+            <div class="table-responsive csv-extractor upload-results">
+              <!-- <p><a href="#" id="" v-on:click=onRevert> Undo last import</a></p> -->
+              <table class="table">
+                <thead class="thead-dark">
+                  <tr>
+                    <th> Count</th>
+                    <th> Item Name</th>
+                    <th> Upload Result</th>
+                    <th> Error Notes</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(item,itemkey) in upload_error">
+                    <td> {{itemkey + 1}} </td>
+                    <td> {{ item.Name }} </td>
+                    <!-- <td> {{ item.Error.length == 0 ? item.Error : 'No Errors' }}  </td> -->
+                    <td> {{ item.code }} </td>
+                    <td> {{ item.error }} </td>
+                  </tr>
+
+                </tbody>
+              </table>
+            </div>
+    
+            <div class="undo-section mt-30">
+
+              <button v-on:click=onRevert>Undo Last Import</button>
+          <div id="brnd_preloader" style="display:none;"></div>
+
+        </div>
+    
+    </div>
 </div>
-</div>
-
-<!-- </div> -->
 <div class="clearfix"></div>
 </div>
 
@@ -125,6 +152,7 @@
     $("body").on("click", ".upload-section.active button", function() {
       // console.log('start');
       // $(".data-loader").addClass("active");
+      $(".mass-upload-browser").find(".table-responsive").css({ overflow: "hidden" });
     });
     setTimeout(function() {
       console.log('end');

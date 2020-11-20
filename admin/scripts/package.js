@@ -147,7 +147,9 @@ new Vue({
       failed_all: 0,
       isActive: false,
       isUpload: "",
-      success_upload: []
+      success_upload: [],
+      revert_counter: 0,
+      revert_total: 0
       
     };
   },
@@ -184,7 +186,10 @@ new Vue({
           }
         })
         const items = await response
-        console.log('res ' + JSON.stringify(items));
+        action == 'DELETE' ? vm.revert_counter++ : '';
+        console.log(`${vm.revert_counter} - ${vm.revert_total}`);
+          vm.revert_total ==  vm.revert_counter ? $('#brnd_preloader').hide() : '';
+        // console.log('res ' + JSON.stringify(items));
         return items
        
       } catch (error) {
@@ -230,7 +235,7 @@ new Vue({
         // console.log(obj['Item Name']);
 
         //validate if item name is empty
-        if (obj['Item Name'] == '' || obj['Category ID'] == '' || obj['Merchant ID'] == '' || obj['Price'] == '') {
+        if ((obj['Item Name'] == '' || obj['Item Name'] == null) || (obj['Category ID'] == '' || obj['Category ID'] == null) || (obj['Merchant ID'] == '' ||  obj['Merchant ID'] == null) || (obj['Price'] == '' ||  obj['Price'] == null)) {
           failed_results.push(obj);
           vm.failedcount++;
         }
@@ -279,6 +284,7 @@ new Vue({
     },
     onRevert()
     {
+      $('#brnd_preloader').show();
       var vm = this;
       $.ajax({
         type: "GET",
@@ -299,19 +305,22 @@ new Vue({
     onDelete(data)
     {
       var vm = this;
+      vm.revert_total = data.length;
       data.forEach((item) =>
       {
-        console.log(item);
         let itemInfo = item.split("/");
-        console.log(itemInfo[0], itemInfo[1]);
-
         vm.callItemsAPI(itemInfo[1], itemInfo[0], "DELETE")
-    
       });
+     
     },
     onFailedItem: function (items)
     {
       var vm = this;
+      console.log(vm.parse_header);
+    
+    //  vm.parse_header = vm.parse_header[x] = vm.parse_header[x].replace('"', '');
+      console.log(vm.parse_header);
+      console.log(items);
       let data = { 'failed': items, 'headers': vm.parse_header };
       axios({
         method: "POST",
@@ -336,13 +345,13 @@ new Vue({
         data: JSON.stringify(data)
       }).then((response) =>
       {
-        console.log(response);
+        // console.log(response);
       //  vm.onRevert();
          
       }).catch(function (response)
       {
         //handle error
-        console.log(response);     
+        // console.log(response);     
       });
     },
     onUpload: function ()
@@ -509,14 +518,13 @@ new Vue({
               vm.upload_error.push({ 'Name': details[2], 'error': '', 'code': 'Success' })
 
           }
-        
         })
     
       })
       var promises = Promise.all(allPromises);
       promises.then(function(data) {
-        console.log('All done');
         $(".data-loader").removeClass("active")
+        $(".mass-upload-browser").find(".table-responsive").css({ overflow: "auto" });
         data.forEach(function (text)
         {
           vm.success_upload.push(`${text.data.ID}/${text.data.MerchantDetail.ID}`);
@@ -526,11 +534,9 @@ new Vue({
         vm.onItemSuccess(vm.success_upload);
       });
 
-
     //send failed items for download
       vm.onFailedItem(vm.failed_items);
-     
-     
+    
     }
   },
   watch: {
