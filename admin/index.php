@@ -70,9 +70,6 @@
 
               <a href="#" id="download_failed" :class=" failed_all == 0 ? { hasFailed : true } : '' ">Download failed imports</a>
 
-              <a href="#" id="download_id">items for revert (for test only)</a>
-
-
             </div>
 
           </div>
@@ -168,11 +165,8 @@
 
       location.reload();
     });
-
-
   });
 </script>
-
 <!-- <script type="text/javascript" src="scripts/package.js"></script> -->
 
 <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.17-beta.0/vue.js"></script> -->
@@ -181,7 +175,4 @@
 <script src="https://unpkg.com/vue/dist/vue.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.2/axios.js"></script>
 <script type="text/javascript" src="scripts/package.js"></script>
-
-<script type="text/javascript">
-
-</script>
+<script type="text/javascript"></script>
