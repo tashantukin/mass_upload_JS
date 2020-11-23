@@ -112,6 +112,30 @@ $(document).ready(function ()
     $(this).attr("download", "_Failed.csv");
   });
 
+  $("#download_success").attr({
+    href: packagePath + "/downloads?file=success_imports.csv&contentType=text/csv",
+    target: "_blank",
+  });
+
+  $("#download_success").on("click", function ()
+  {
+    $(this).attr("download", "_Success.csv");
+  });
+//for testing only
+  $("#download_id").attr({
+    href: packagePath + "/downloads?file=uploaded_items.csv&contentType=text/csv",
+    target: "_blank",
+  });
+
+  $("#download_id").on("click", function ()
+  {
+    $(this).attr("download", "_success_id.csv");
+  });
+
+
+
+
+
   loadAllCategories();
   loadAllCustomFields();
 });
@@ -142,6 +166,7 @@ new Vue({
       all_customfields: [],
       media: [],
       failed_items: [],
+      success_items: [],
       item_success: [], 
       success_all: 0,
       failed_all: 0,
@@ -336,6 +361,31 @@ new Vue({
        
       });
     },
+
+    onSuccessItem: function (items)
+    {
+      var vm = this;
+      console.log(vm.parse_header);
+    
+    //  vm.parse_header = vm.parse_header[x] = vm.parse_header[x].replace('"', '');
+      console.log(vm.parse_header);
+      console.log(items);
+      let data = { 'success': items, 'headers': vm.parse_header };
+      axios({
+        method: "POST",
+        url: `${packagePath}/download_success.php`,
+        data: JSON.stringify(data)
+      }).then((response) =>
+      {
+        console.log(response);
+         
+      }).catch(function (response)
+      {
+        //handle error
+       
+      });
+    },
+
     onItemSuccess: function (itemID)
     {
       let data = { 'items': itemID };
@@ -350,9 +400,8 @@ new Vue({
          
       }).catch(function (response)
       {
-        //handle error
-        // console.log(response);     
       });
+
     },
     onUpload: function ()
     {
@@ -487,6 +536,8 @@ new Vue({
             
             default:
 
+              vm.success_items.push(item.split(","));
+
               var itemDetails = {
                 'SKU': details[9],
                 'Name': details[2],
@@ -523,8 +574,10 @@ new Vue({
       })
       var promises = Promise.all(allPromises);
       promises.then(function(data) {
+     
         $(".data-loader").removeClass("active")
         $(".mass-upload-browser").find(".table-responsive").css({ overflow: "auto" });
+
         data.forEach(function (text)
         {
           vm.success_upload.push(`${text.data.ID}/${text.data.MerchantDetail.ID}`);
@@ -536,12 +589,15 @@ new Vue({
 
     //send failed items for download
       vm.onFailedItem(vm.failed_items);
+      // send success items for download
+      vm.onSuccessItem(vm.success_items);
     
     }
   },
   watch: {
     messages: function (val, oldVal)
     {
+      
       // $(".table").find("tbody tr:last").hide();
       //Scroll to bottom
     },

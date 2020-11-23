@@ -473,6 +473,14 @@ input[type="file"] {
 
 }
 
+.undo-section span.success {
+
+	color: #4c9f38;
+	margin-left: 5px;
+
+}
+
+
 .upload-section span.failed, .status-container span.failed {
 
 	color: #d0021b;
@@ -756,5 +764,19 @@ input[type="file"] {
 
 }
 
+.hasSuccess {
+	display:none;
+}
 
+.hasFailed {
+	display:none;
+
+}
+.resultSuccess {
+	color:  #4c9f38
+}
+
+.resultFailed {
+	color: #d0021b;
+}
 

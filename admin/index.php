@@ -52,7 +52,6 @@
 
       </div>
   
-
     <!-- </div> -->
   </div>
 
@@ -65,18 +64,20 @@
 
               <span class="success">Success: {{ success_all }} </span>
 
-              <a href="#">Download successful imports</a>
+              <a href="#" id="download_success" :class=" success_all == 0 ? { hasSuccess : true } : '' ">Download successful imports</a>
 
               <span class="failed">Failed: {{ failed_all }}</span>
 
-              <a href="#" id="download_failed">Download failed imports</a>
+              <a href="#" id="download_failed" :class=" failed_all == 0 ? { hasFailed : true } : '' ">Download failed imports</a>
+
+              <a href="#" id="download_id">items for revert (for test only)</a>
+
 
             </div>
 
           </div>
 
             <div class="table-responsive csv-extractor upload-results">
-              <!-- <p><a href="#" id="" v-on:click=onRevert> Undo last import</a></p> -->
               <table class="table">
                 <thead class="thead-dark">
                   <tr>
@@ -90,8 +91,8 @@
                   <tr v-for="(item,itemkey) in upload_error">
                     <td> {{itemkey + 1}} </td>
                     <td> {{ item.Name }} </td>
-                    <!-- <td> {{ item.Error.length == 0 ? item.Error : 'No Errors' }}  </td> -->
-                    <td> {{ item.code }} </td>
+                   
+                    <td class='resultSuccess' :class=" item.code == 'Failed' ? { resultFailed : true } : '' "> {{ item.code }} </td>
                     <td> {{ item.error }} </td>
                   </tr>
 
@@ -102,8 +103,9 @@
             <div class="undo-section mt-30">
 
               <button v-on:click=onRevert>Undo Last Import</button>
-          <div id="brnd_preloader" style="display:none;"></div>
-
+          <div id="brnd_preloader" style="display:none;"> </div>
+         
+          <span class="success" :class="revert_total == 0 ? { hasFailed : true } : '' ">Total items: {{ revert_total }} </span> 
         </div>
     
     </div>
@@ -173,7 +175,10 @@
 
 <!-- <script type="text/javascript" src="scripts/package.js"></script> -->
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.17-beta.0/vue.js"></script>
+<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.17-beta.0/vue.js"></script> -->
+
+<!-- production version -->
+<script src="https://unpkg.com/vue/dist/vue.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.2/axios.js"></script>
 <script type="text/javascript" src="scripts/package.js"></script>
 
