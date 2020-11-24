@@ -153,7 +153,7 @@ new Vue({
       failed_results: "",
       sortOrders: {},
       sortKey: "",
-      count: "",
+      count: 0,
       current_count: 0,
       failedcount: 1,
       csvcontent: "",
