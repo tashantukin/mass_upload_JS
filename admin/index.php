@@ -42,8 +42,8 @@
       </div>
     </div>
 
-      <div class="upload-section mt-30 active">
-        <button v-on:click=onUpload>Upload</button>
+      <div class="upload-section mt-30" >
+        <button v-on:click=onUpload  :class=" count == 0  || success_all != 0 || failed_all != 0  ? { disable : true} : {active: true} ">Upload</button>
         <span>Total Item Uploaded: {{ count }}  Items</span>
 
         <span class="success">Success: {{ success_all }} </span>
