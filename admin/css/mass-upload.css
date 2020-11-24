@@ -577,7 +577,7 @@ input[type="file"] {
 
 }
 
-.upload-section.active button {
+.upload-section button.active {
 
 	background: #50c8ff;
 
@@ -779,3 +779,13 @@ input[type="file"] {
 	color: #d0021b;
 }
 
+.disable
+        {
+        cursor: not-allowed;
+        pointer-events: none;
+
+        /*Button disabled - CSS color class*/
+        color: #c0c0c0;
+        background-color: #ffffff;
+
+        }
