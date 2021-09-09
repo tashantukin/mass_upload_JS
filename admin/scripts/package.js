@@ -132,10 +132,6 @@ $(document).ready(function ()
     $(this).attr("download", "_success_id.csv");
   });
 
-
-
-
-
   loadAllCategories();
   loadAllCustomFields();
 });
@@ -469,9 +465,9 @@ new Vue({
             if (variants != null) {
               // vm.variants.push(details[variant]);
 
-              variants.length == 3 ? vm.all_variants.push({ 'Variants': [{ 'ID': '', 'Name': variants[1], 'GroupName': variants[0] }], 'SKU': 'random', 'Price': '0', 'StockLimited': true, 'StockQuantity': variants[2] }) : '';
-              variants.length == 5 ? vm.all_variants.push({ 'Variants': [{ 'ID': '', 'Name': variants[1], 'GroupName': variants[0] }, { 'ID': '', 'Name': variants[3], 'GroupName': $variants[2] }], 'SKU': 'random', 'Price': '0', 'StockLimited': true, 'StockQuantity': variants[4] }) : '';
-              variants.length == 7 ? vm.all_variants.push({ 'Variants': [{ 'ID': '', 'Name': variants[1], 'GroupName': variants[0] }, { 'ID': '', 'Name': variants[3], 'GroupName': variants[2] }, { 'ID': '', 'Name': variants[5], 'GroupName': variants[4] }], 'SKU': 'random', 'Price': '0', 'StockLimited': true, 'StockQuantity': variants[6] }) : '';
+              variants.length == 4 ? vm.all_variants.push({ 'Variants': [{ 'ID': '', 'Name': variants[1], 'GroupName': variants[0] }], 'SKU': 'random', 'Price': variants[3] , 'StockLimited': true, 'StockQuantity': variants[2] }) : '';
+              variants.length == 6 ? vm.all_variants.push({ 'Variants': [{ 'ID': '', 'Name': variants[1], 'GroupName': variants[0] }, { 'ID': '', 'Name': variants[3], 'GroupName': $variants[2] }], 'SKU': 'random', 'Price': variants[5], 'StockLimited': true, 'StockQuantity': variants[4] }) : '';
+              variants.length == 8 ? vm.all_variants.push({ 'Variants': [{ 'ID': '', 'Name': variants[1], 'GroupName': variants[0] }, { 'ID': '', 'Name': variants[3], 'GroupName': variants[2] }, { 'ID': '', 'Name': variants[5], 'GroupName': variants[4] }], 'SKU': 'random', 'Price': variants[7], 'StockLimited': true, 'StockQuantity': variants[6] }) : '';
             }
           
           });
