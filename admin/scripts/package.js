@@ -200,26 +200,6 @@ new Vue({
       return entries;
     },
 
-
-
-    uploadTest: function (evt)
-    {
-    //  $('#upload_csv').submit();
-      var file = evt.target.files[0];
-
-
-      Papa.parse(file, {
-        header: true,
-        dynamicTyping: true,
-        complete: function(results) {
-          data = results.data;
-
-          console.log(data);
-        }
-      });
-
-     
-    },
     async callItemsAPI(merchantID, data, action)
     {
       try {
