@@ -17,6 +17,9 @@ function getCookie(name){
       return parts.pop().split(';').shift();
   }
 }
+function isNumeric(num){
+  return !isNaN(num)
+}
 function createCSV()
 {
   // var data = { startdate: start, enddate: end };
@@ -170,7 +173,9 @@ new Vue({
       isUpload: "",
       success_upload: [],
       revert_counter: 0,
-      revert_total: 0
+      revert_total: 0,
+      isPriceValid: 1,
+      invalidPriceCount: 0
       
     };
   },
@@ -193,6 +198,27 @@ new Vue({
       var entries = allTextLines[0].split(',');
       console.log(entries);
       return entries;
+    },
+
+
+
+    uploadTest: function (evt)
+    {
+    //  $('#upload_csv').submit();
+      var file = evt.target.files[0];
+
+
+      Papa.parse(file, {
+        header: true,
+        dynamicTyping: true,
+        complete: function(results) {
+          data = results.data;
+
+          console.log(data);
+        }
+      });
+
+     
     },
     async callItemsAPI(merchantID, data, action)
     {
@@ -221,82 +247,63 @@ new Vue({
     {
       var vm = this;
 
-      var lines = csv.split("\n");
-      lines.pop();
-      // lines.unshift(counter);
-      // csvcontent =  lines.shift();
-      vm.count = lines.length - 1;
-      vm.count = vm.count;
+      var lines = csv.data //csv.split("\n")
+      console.log({ lines });
+       lines.pop();
+     
+      vm.count = lines.length;
+     
       var result = [];
       //for failed results,
       var failed_results = [];
 
-      var headers = lines[0].split(",");
-      vm.parse_header = lines[0].split(",");
+      var headers = csv.meta['fields']
+      console.log({headers})
+      vm.parse_header = headers;
 
       vm.csvcontent = lines;
-      lines[0].split(",").forEach(function (key)
+
+        headers .forEach(function (key)
       {
         // counter++;
         vm.sortOrders[key] = 1;
-      });
-
-      lines.map(function (line, indexLine)
-      {
-        if (indexLine < 1) return; // Jump header line
-
-        var obj = {};
-        var currentline = line.split(",");
-
-        headers.map(function (header, indexHeader)
-        {
-          obj[header] = currentline[indexHeader];
         });
-
-        // console.log(obj['Item Name']);
-
-        //validate if item name is empty
-        if ((obj['Item Name'] == '' || obj['Item Name'] == null) || (obj['Category ID'] == '' || obj['Category ID'] == null) || (obj['Merchant ID'] == '' ||  obj['Merchant ID'] == null) || (obj['Price'] == '' ||  obj['Price'] == null)) {
-          failed_results.push(obj);
+      
+      $.each(lines, function (i, el)
+      {
+      
+        result.push(el);
+          //validate if item name is empty
+        if ((el['Item Name'] == '' || el['Item Name'] == null) || (el['Category ID'] == '' || el['Category ID'] == null) || (el['Merchant ID'] == '' ||  el['Merchant ID'] == null) || (el['Price'] == '' ||  el['Price'] == null)) {
+          failed_results.push(el);
           vm.failedcount++;
         }
-        result.push(obj);
-       
-      });
-
-      // result.pop() // remove the last item because undefined values
+        if (!isNumeric(el['Price'])) {
+         // vm.isPriceValid = 0;
+          vm.invalidPriceCount++;
+        }
+      })
+    
 
       return result; // JavaScript object
     },
     loadCSV(e)
     {
       var vm = this;
-      if (window.FileReader) {
-        vm.failedcount = 1 //when new csv is uploaded, set the failed count to 1 again
-        var reader = new FileReader();
-        reader.readAsText(e.target.files[0]);
-        // Handle errors load
-        reader.onload = function (event)
-        {
+      var file = e.target.files[0];
+      Papa.parse(file, {
+        header: true,
+        dynamicTyping: true,
+        complete: function(results) {
+          data = results;
+          console.log({data});
+          vm.parse_csv = vm.csvJSON(data);
 
-          var csv = event.target.result;
          
-          vm.parse_csv = vm.csvJSON(csv);
+        }
+      });
 
-          console.log(`all headers ${vm.parse_header}`);
-        
-          //vm.failedcount - 1;
-
-        };
-        reader.onerror = function (evt)
-        {
-          if (evt.target.error.name == "NotReadableError") {
-            alert("Cannot read file !");
-          }
-        };
-      } else {
-        alert("FileReader are not supported in this browser.");
-      }
+      
       vm.upload_error = [];
       // var rowpos = $('#item_list tr:last').position();
       // $('.csv-extractor').scrollTop(rowpos.top);
@@ -423,20 +430,27 @@ new Vue({
       const custom_last_index = [...vm.customfields_header].pop() + 1;
       const custom_first_index = [...vm.customfields_header].shift();
         
-      vm.csvcontent.shift();
+     // vm.csvcontent.pop();
       // vm.success_upload_items = [];
       var allPromises = [];
+      console.log(`${JSON.stringify(vm.csvcontent)}`)
+
+
       vm.csvcontent.forEach(function (line)
       {
         
-        var items = line.split("\n");
+        console.log({ line })
         
-        items.forEach(function (item)
-        {
+        var items = line;
+        
+       // items.forEach(function (item)
+        //{
+
           vm.isActive = true
           vm.current_count++;
       
-          var details = item.split(",");
+          var details = items;
+          console.log({ details });
           vm.all_variants = [];
           vm.all_customfields = [];
           vm.variants = [];
@@ -447,7 +461,7 @@ new Vue({
           let invalid_categories_count = 0;
           let categories;
           
-          !details[1].length == 0 ? categories = (details[1].split('/')) : categories = [];
+          !details['Category ID'].length == 0 ? categories = (details['Category ID'].split('/')) : categories = [];
          
           if (categories.length != 0 || categories != undefined || categories != '') {
             categories.forEach(function (categoryID)
@@ -455,12 +469,12 @@ new Vue({
               allcategories.includes(categoryID) ? all_categories.push({ 'ID': categoryID }) : invalid_categories_count++;
             });
           }
-
+          // details[Object.keys(details)[1]]
           //variants
           numberRange(variant_first_index, variant_last_index).forEach(function (variant)
           {
             
-            let variants = !details[variant] == 0 ? details[variant].split("/") : null;
+            let variants = !details[Object.keys(details)[variant]] == 0 ? details[Object.keys(details)[variant]].split("/") : null;
 
             if (variants != null) {
               // vm.variants.push(details[variant]);
@@ -481,7 +495,7 @@ new Vue({
             
             let customfields_values = [];
             
-            !details[customfield] == '' ? customfields_values.push(details[customfield].trim()) : '';
+            !details[Object.keys(details)[customfield]] == '' ? customfields_values.push(details[Object.keys(details)[customfield]].trim()) : '';
 
             let custom_code = allcustomfields.filter(custom => custom.Name == customfield_name.trim())
 
@@ -495,58 +509,58 @@ new Vue({
           //media
           numberRange(3, 8).forEach(function (media)
           {
-            !details[media] == '' ? vm.media.push({ 'MediaUrl': details[media] }) : '';
+            !details[Object.keys(details)[media]] == '' ? vm.media.push({ 'MediaUrl': details[Object.keys(details)[media]] }) : '';
 
           })
 
           //1. Validate empty fields
           switch (true) {
-            case details[0] == '':
+            case details[Object.keys(details)[0]] == '':
               error_count++
-              vm.upload_error.push({ 'Name': details[2], 'error': 'Invalid merchant id', 'code': 'Failed' })
-              vm.failed_items.push(item.split(","));
+              vm.upload_error.push({ 'Name': details['Item Name'], 'error': 'Invalid merchant id', 'code': 'Failed' })
+              vm.failed_items.push(items);
               vm.failed_all++;
               break;
-            case details[1] == '':
+            case details[Object.keys(details)[1]] == '':
               error_count++
-              vm.upload_error.push({ 'Name': details[2], 'error': 'Category is empty', 'code': 'Failed' })
-              vm.failed_items.push(item.split(","));
+              vm.upload_error.push({ 'Name': details['Item Name'], 'error': 'Category is empty', 'code': 'Failed' })
+              vm.failed_items.push(items);
               vm.failed_all++;
               break;
             case invalid_categories_count != 0:
-              vm.upload_error.push({ 'Name': details[2], 'error': `${invalid_categories_count} invalid category ID'/s`, 'code': 'Failed' })
-              vm.failed_items.push(item.split(","));
+              vm.upload_error.push({ 'Name': details['Item Name'], 'error': `${invalid_categories_count} invalid category ID'/s`, 'code': 'Failed' })
+              vm.failed_items.push(items);
               vm.failed_all++;
               break;
-            case details[2] == '':
+            case details[Object.keys(details)[2]] == '':
               error_count++
-              vm.upload_error.push({ 'Name': details[2], 'error': 'Item name is empty', 'code': 'Failed' })
-              vm.failed_items.push(item.split(","));
+              vm.upload_error.push({ 'Name': details['Item Name'], 'error': 'Item name is empty', 'code': 'Failed' })
+              vm.failed_items.push(items);
               vm.failed_all++;
               break;
-            case details[11] == '':
-              vm.upload_error.push({ 'Name': details[2], 'error': 'Price is empty', 'code': 'Failed' })
-              vm.failed_items.push(item.split(","));
+            case details[Object.keys(details)[11]] == '':
+              vm.upload_error.push({ 'Name': details['Item Name'], 'error': 'Price is empty', 'code': 'Failed' })
+              vm.failed_items.push(items);
               vm.failed_all++;
               break;
             
             default:
 
-              vm.success_items.push(item.split(","));
+              vm.success_items.push(items);
 
               var itemDetails = {
-                'SKU': details[9],
-                'Name': details[2],
-                'BuyerDescription': details[8],
-                'SellerDescription': details[8],
-                'Price': details[11],
+                'SKU': details['SKU'],
+                'Name': details['Item Name'],
+                'BuyerDescription': details['Item Description'],
+                'SellerDescription': details['Item Description'],
+                'Price': details['Price'],
                 'PriceUnit': null,
-                'StockLimited': details[13],
-                'StockQuantity': details[12],
+                'StockLimited': details['Stock Limited'],
+                'StockQuantity': details['Stock Quantity'],
                 'IsVisibleToCustomer': true,
                 'Active': true,
                 'IsAvailable': '',
-                'CurrencyCode': details[10],
+                'CurrencyCode': details['Currency'],
                 'Categories': all_categories,
                 'ShippingMethods': null,
                 'PickupAddresses': null,
@@ -558,14 +572,14 @@ new Vue({
               
               var itemdata = itemDetails;
            
-              allPromises.push(vm.callItemsAPI(details[0], itemdata, "POST"));
+              allPromises.push(vm.callItemsAPI(details['Merchant ID'], itemdata, "POST"));
 
               vm.success_all++;
 
-              vm.upload_error.push({ 'Name': details[2], 'error': '', 'code': 'Success' })
+              vm.upload_error.push({ 'Name': details['Item Name'], 'error': '', 'code': 'Success' })
 
           }
-        })
+       // })
     
       })
       var promises = Promise.all(allPromises);

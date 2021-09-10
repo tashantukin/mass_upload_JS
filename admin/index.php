@@ -1,4 +1,5 @@
 <link rel="stylesheet" href="css/mass-upload.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.1/papaparse.min.js" integrity="sha512-EbdJQSugx0nVWrtyK3JdQQ/03mS3Q1UiAhRtErbwl1YL/+e2hZdlIcSURxxh7WXHTzn83sjlh2rysACoJGfb6g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
 <!-- <div class="col-sm-9 main-content" id="main"> -->
 
@@ -13,9 +14,15 @@
         <div class="browse-element">
           <div class="form-group">
             <input type="file" name="file-7[]" id="file-7" accept=".csv" class="inputfile" data-multiple-caption="{count} Upload File" multiple @change="loadCSV($event)">
-            <label for="file-7"><span class="archive-name">Upload File</span><span class="btn-inputfile"> Browse</span></label><span class="btn-inputfileclear">Clear</span><span class="result-found" style="color:green">{{ count }} Items Found.</span><span class="result-found" style="color:red">{{failedcount - 1}} Warning/s (empty Fields).</span>
+            <label for="file-7"><span class="archive-name">Upload File</span><span class="btn-inputfile"> Browse</span></label><span class="btn-inputfileclear">Clear</span><span class="result-found" style="color:green">{{ count }} Item/s Found.</span><span v-if="failedcount != 1"class="result-found" style="color:red">{{failedcount - 1}} Warning/s (empty Fields).</span>
+            <span  v-if ="invalidPriceCount != 0"class="result-found" style="color:red">{{invalidPriceCount}} Invalid Price format.</span>
+        
+         
           </div>
         </div>
+
+    
+
       </div>
       <div class="table-responsive csv-extractor">
         <table class="table" v-if='parse_csv' id="item_list">

@@ -71,7 +71,7 @@ $all_headers = array_merge($default_headers, $customfield_headers);
 // generate headers
 fputcsv($fh_items, $all_headers);
 
-for ($x = 1; $x <= 100; $x++) {
+for ($x = 1; $x <= 50; $x++) {
 
   // $itemID = '*';
   $merchants_id = $random_merchant[array_rand($random_merchant)];
@@ -82,15 +82,15 @@ for ($x = 1; $x <= 100; $x++) {
   $image_3 = 'https://images.goodsmile.info/cgm/images/product/20200603/9605/70417/large/b0b61f79f241207aeababea5ae9123a6.jpg';
   $image_4 = 'sample url link';
   $image_5 = 'sample url link';
-  $item_desc = 'Item Description ' . $x;
+  $item_desc = 'Item Description, supports, adding, a comma now' . $x;
   $SKU = 'Item SKU ' . $x;
   $currency = $currencycode;
   $price = 100 + $x;
   $stock_qty = 10 * $x;
   $stock_limited = $random_limit[array_rand($random_limit)];
-  $variant1 = 'Color/Red/Size/M/Type/B/10';
-  $variant2 = 'Color/Blue/Size/S/Type/A/10';
-  $variant3 = 'Color/Green/Size/L/Type/A/20';
+  $variant1 = 'Color/Red/Size/M/Type/B/10/20';
+  $variant2 = 'Color/Blue/Size/S/Type/A/10/30';
+  $variant3 = 'Color/Green/Size/L/Type/A/20/40';
 
   $itemsRows = array($merchants_id,  $cats_id, $item_name, $image_1, $image_2, $image_3,  $image_4, $image_5, $item_desc, $SKU, $currency, $price, $stock_qty, $stock_limited, $variant1, $variant2, $variant3);
   fputcsv($fh_items,  $itemsRows);
