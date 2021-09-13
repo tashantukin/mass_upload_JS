@@ -71,15 +71,15 @@ $all_headers = array_merge($default_headers, $customfield_headers);
 // generate headers
 fputcsv($fh_items, $all_headers);
 
-for ($x = 1; $x <= 50; $x++) {
+for ($x = 1; $x <= 10; $x++) {
 
   // $itemID = '*';
   $merchants_id = $random_merchant[array_rand($random_merchant)];
   $cats_id = $random_category[array_rand($random_category)];
   $item_name = 'Sample new Item ' . time() . $x;
-  $image_1 = 'https://images.goodsmile.info/cgm/images/product/20200603/9605/70411/large/a02d264a54704a52ab991ede87fb7ada.jpg';
-  $image_2 = 'https://images.goodsmile.info/cgm/images/product/20200603/9605/70416/large/8b367d358c9bc977fdd9114f96415ae9.jpg';
-  $image_3 = 'https://images.goodsmile.info/cgm/images/product/20200603/9605/70417/large/b0b61f79f241207aeababea5ae9123a6.jpg';
+  $image_1 = 'https://imagesvc.meredithcorp.io/v3/mm/image?url=https%3A%2F%2Fstatic.onecms.io%2Fwp-content%2Fuploads%2Fsites%2F9%2F2020%2F09%2F11%2Fwhat-is-smooth-wine-FT-BLOG0920.jpg&q=85';
+  $image_2 = 'https://images.mktw.net/im-389977?width=700&height=467';
+  $image_3 = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSBVM3pWXmvlL21xKamVtgXN7tFifgsJMHoLQ&usqp=CAU';
   $image_4 = 'sample url link';
   $image_5 = 'sample url link';
   $item_desc = 'Item Description, supports, adding, a comma now' . $x;

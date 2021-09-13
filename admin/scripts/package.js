@@ -95,6 +95,7 @@ function numberRange (start, end) {
 $(document).ready(function ()
 {
   createCSV();
+  
   $("#formatlink").attr({
     href: packagePath + "/downloads?file=example.csv&contentType=text/csv",
     target: "_blank",
@@ -459,9 +460,11 @@ new Vue({
             if (variants != null) {
               // vm.variants.push(details[variant]);
 
-              variants.length == 4 ? vm.all_variants.push({ 'Variants': [{ 'ID': '', 'Name': variants[1], 'GroupName': variants[0] }], 'SKU': 'random', 'Price': variants[3] , 'StockLimited': true, 'StockQuantity': variants[2] }) : '';
-              variants.length == 6 ? vm.all_variants.push({ 'Variants': [{ 'ID': '', 'Name': variants[1], 'GroupName': variants[0] }, { 'ID': '', 'Name': variants[3], 'GroupName': $variants[2] }], 'SKU': 'random', 'Price': variants[5], 'StockLimited': true, 'StockQuantity': variants[4] }) : '';
-              variants.length == 8 ? vm.all_variants.push({ 'Variants': [{ 'ID': '', 'Name': variants[1], 'GroupName': variants[0] }, { 'ID': '', 'Name': variants[3], 'GroupName': variants[2] }, { 'ID': '', 'Name': variants[5], 'GroupName': variants[4] }], 'SKU': 'random', 'Price': variants[7], 'StockLimited': true, 'StockQuantity': variants[6] }) : '';
+              //get the location cf
+
+              variants.length == 4 ? vm.all_variants.push({ 'Variants': [{ 'ID': '', 'Name': variants[1], 'GroupName': variants[0] }, { 'ID': '21ABA8DE-73E6-492A-AA57-89F41E75A020', 'GroupID' : '92a61a8a-dc1b-4cbe-8cd6-b65d337b7dbe', 'Name': 'Alaska', 'GroupName': 'Country' }], 'SKU': 'a', 'Price': variants[3] , 'StockLimited': true, 'StockQuantity': variants[2] }) : '';
+              variants.length == 6 ? vm.all_variants.push({ 'Variants': [{ 'ID': '', 'Name': variants[1], 'GroupName': variants[0] }, { 'ID': '', 'Name': variants[3], 'GroupName': variants[2] },{ 'ID': '21ABA8DE-73E6-492A-AA57-89F41E75A020', 'GroupID' : '92a61a8a-dc1b-4cbe-8cd6-b65d337b7dbe', 'Name': 'Alaska', 'GroupName': 'Country' }], 'SKU': 'aa', 'Price': variants[5], 'StockLimited': true, 'StockQuantity': variants[4] }) : '';
+              variants.length == 8 ? vm.all_variants.push({ 'Variants': [{ 'ID': '', 'Name': variants[1], 'GroupName': variants[0] }, { 'ID': '', 'Name': variants[3], 'GroupName': variants[2] }, { 'ID': '', 'Name': variants[5], 'GroupName': variants[4] },{ 'ID': '21ABA8DE-73E6-492A-AA57-89F41E75A020', 'GroupID' : '92a61a8a-dc1b-4cbe-8cd6-b65d337b7dbe', 'Name': 'Alaska', 'GroupName': 'Country' }], 'SKU': 'aaa', 'Price': variants[7], 'StockLimited': true, 'StockQuantity': variants[6] }) : '';
             }
           
           });
@@ -475,9 +478,9 @@ new Vue({
             
             let customfields_values = [];
             
-            !details[Object.keys(details)[customfield]] == '' ? customfields_values.push(details[Object.keys(details)[customfield]].trim()) : '';
+            !details[Object.keys(details)[customfield]] == '' ? customfields_values.push(details[Object.keys(details)[customfield]]) : '';
 
-            let custom_code = allcustomfields.filter(custom => custom.Name == customfield_name.trim())
+            let custom_code = allcustomfields.filter(custom => custom.Name == customfield_name)
 
             let customfield_code = custom_code.length > 0 ? custom_code[0]['Code'] : '';
 
