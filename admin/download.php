@@ -88,9 +88,9 @@ for ($x = 1; $x <= 10; $x++) {
   $price = 100 + $x;
   $stock_qty = 10 * $x;
   $stock_limited = $random_limit[array_rand($random_limit)];
-  $variant1 = 'Color/Red/Size/M/Type/B/10/20';
-  $variant2 = 'Color/Blue/Size/S/Type/A/10/30';
-  $variant3 = 'Color/Green/Size/L/Type/A/20/40';
+  $variant1 = 'Color/Red/Size/M/Type/B/10/20/SKU/Country';
+  $variant2 = 'Color/Blue/Size/S/Type/A/10/30/SKU/Country';
+  $variant3 = 'Color/Green/Size/L/Type/A/20/40/SKU/Country';
 
   $itemsRows = array($merchants_id,  $cats_id, $item_name, $image_1, $image_2, $image_3,  $image_4, $image_5, $item_desc, $SKU, $currency, $price, $stock_qty, $stock_limited, $variant1, $variant2, $variant3);
   fputcsv($fh_items,  $itemsRows);

@@ -4,11 +4,14 @@ const packagePath = scriptSrc.replace("/scripts/package.js", "").trim();
 const apiUrl = packagePath + "/upload.php";
 const apiUrl_createrandom = packagePath + "/create_random.php";
 const baseURL = window.location.hostname;
+var locationId;
 
 const token = getCookie('webapitoken');
 var isValid = false;
 let allcategories = [];
 let allcustomfields = [];
+let allLocationVariants = [];
+
 
 function getCookie(name){
   var value = '; ' + document.cookie;
@@ -64,6 +67,35 @@ function loadAllCategories()
     }
   })
 }
+function loadLocationVariants(locationId)
+{
+  var data = { locationId };
+  $.ajax({
+    url: packagePath + "/get_variants.php",
+    method: "POST",
+    contentType: "application/json",
+    data: JSON.stringify(data),
+    success: function (response)
+    {
+      
+      custom = $.parseJSON(response);
+      console.log(custom.result)
+      
+             $.each(custom.result, function (index, variant)
+             {
+              
+               allLocationVariants.push({ 'Name': variant['Name'], 'ID' : variant['ID']});
+       
+             });
+      console.log({ allLocationVariants });
+     
+
+     
+    },
+  });
+
+}
+
 function loadAllCustomFields()
 {
   var adminID = $("#userGuid").val();
@@ -89,12 +121,45 @@ function loadAllCustomFields()
   })
 
 }
+
+function getMarketplaceCustomFields(callback)
+{
+  var apiUrl = "/api/v2/marketplaces";
+  $.ajax({
+    url: apiUrl,
+    method: "GET",
+    contentType: "application/json",
+    success: function (result)
+    {
+      if (result) {
+        callback(result.CustomFields);
+      }
+    },
+  });
+}
+
+
 function numberRange (start, end) {
   return new Array(end - start).fill().map((d, i) => i + start);
 }
 $(document).ready(function ()
 {
   createCSV();
+
+  getMarketplaceCustomFields(function(result) {
+    $.each(result, function(index, cf) {
+        if (cf.Name == 'Location ID' ) {
+             code = cf.Code;
+            locationId = cf.Values[0]; 
+          loadLocationVariants(locationId);
+        }
+        
+    })
+  });
+  
+
+
+  
   
   $("#formatlink").attr({
     href: packagePath + "/downloads?file=example.csv&contentType=text/csv",
@@ -411,22 +476,13 @@ new Vue({
       const custom_last_index = [...vm.customfields_header].pop() + 1;
       const custom_first_index = [...vm.customfields_header].shift();
         
-     // vm.csvcontent.pop();
-      // vm.success_upload_items = [];
       var allPromises = [];
-      console.log(`${JSON.stringify(vm.csvcontent)}`)
-
-
+   
       vm.csvcontent.forEach(function (line)
       {
         
-        console.log({ line })
-        
         var items = line;
         
-       // items.forEach(function (item)
-        //{
-
           vm.isActive = true
           vm.current_count++;
       
@@ -450,7 +506,6 @@ new Vue({
               allcategories.includes(categoryID) ? all_categories.push({ 'ID': categoryID }) : invalid_categories_count++;
             });
           }
-          // details[Object.keys(details)[1]]
           //variants
           numberRange(variant_first_index, variant_last_index).forEach(function (variant)
           {
@@ -458,13 +513,31 @@ new Vue({
             let variants = !details[Object.keys(details)[variant]] == 0 ? details[Object.keys(details)[variant]].split("/") : null;
 
             if (variants != null) {
-              // vm.variants.push(details[variant]);
 
+              if (variants.length == 6) {
+                var result = $.grep(allLocationVariants, function (e) { return e.Name == variants[5]; });
+              
+                var groupId = result[0]  ? result[0].ID : '';
+                
+                vm.all_variants.push({ 'Variants': [{ 'ID': '', 'Name': variants[1], 'GroupName': variants[0] }, { 'ID': groupId, 'GroupID': locationId, 'Name': variants[5], 'GroupName': 'Country' }], 'SKU': variants[4], 'Price': variants[3], 'StockLimited': true, 'StockQuantity': variants[2] });
+                
+              }
               //get the location cf
+              if (variants.length == 8) {
+                var result = $.grep(allLocationVariants, function (e) { return e.Name == variants[7]; });
+                var groupId = result[0]  ? result[0].ID : '';
+                
+                  vm.all_variants.push({ 'Variants': [{ 'ID': '', 'Name': variants[1], 'GroupName': variants[0] }, { 'ID': '', 'Name': variants[3], 'GroupName': variants[2] }, { 'ID': groupId, 'GroupID': locationId, 'Name': variants[7], 'GroupName': 'Country' }], 'SKU': variants[6], 'Price': variants[5], 'StockLimited': true, 'StockQuantity': variants[4] });
+                
+              }
+              if (variants.length == 10) {
+                var result = $.grep(allLocationVariants, function (e) { return e.Name == variants[9]; });
 
-              variants.length == 4 ? vm.all_variants.push({ 'Variants': [{ 'ID': '', 'Name': variants[1], 'GroupName': variants[0] }, { 'ID': '21ABA8DE-73E6-492A-AA57-89F41E75A020', 'GroupID' : '92a61a8a-dc1b-4cbe-8cd6-b65d337b7dbe', 'Name': 'Alaska', 'GroupName': 'Country' }], 'SKU': 'a', 'Price': variants[3] , 'StockLimited': true, 'StockQuantity': variants[2] }) : '';
-              variants.length == 6 ? vm.all_variants.push({ 'Variants': [{ 'ID': '', 'Name': variants[1], 'GroupName': variants[0] }, { 'ID': '', 'Name': variants[3], 'GroupName': variants[2] },{ 'ID': '21ABA8DE-73E6-492A-AA57-89F41E75A020', 'GroupID' : '92a61a8a-dc1b-4cbe-8cd6-b65d337b7dbe', 'Name': 'Alaska', 'GroupName': 'Country' }], 'SKU': 'aa', 'Price': variants[5], 'StockLimited': true, 'StockQuantity': variants[4] }) : '';
-              variants.length == 8 ? vm.all_variants.push({ 'Variants': [{ 'ID': '', 'Name': variants[1], 'GroupName': variants[0] }, { 'ID': '', 'Name': variants[3], 'GroupName': variants[2] }, { 'ID': '', 'Name': variants[5], 'GroupName': variants[4] },{ 'ID': '21ABA8DE-73E6-492A-AA57-89F41E75A020', 'GroupID' : '92a61a8a-dc1b-4cbe-8cd6-b65d337b7dbe', 'Name': 'Alaska', 'GroupName': 'Country' }], 'SKU': 'aaa', 'Price': variants[7], 'StockLimited': true, 'StockQuantity': variants[6] }) : '';
+                var groupId = result[0]  ? result[0].ID : '';
+               
+                  vm.all_variants.push({ 'Variants': [{ 'ID': '', 'Name': variants[1], 'GroupName': variants[0] }, { 'ID': '', 'Name': variants[3], 'GroupName': variants[2] }, { 'ID': '', 'Name': variants[5], 'GroupName': variants[4] }, { 'ID': groupId, 'GroupID': locationId, 'Name': variants[9], 'GroupName': 'Country' }], 'SKU': variants[8], 'Price': variants[7], 'StockLimited': true, 'StockQuantity': variants[6] });
+                
+              }
             }
           
           });
