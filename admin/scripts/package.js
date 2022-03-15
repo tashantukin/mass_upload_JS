@@ -145,6 +145,7 @@ function numberRange (start, end) {
 $(document).ready(function ()
 {
   createCSV();
+<<<<<<< HEAD
 
   getMarketplaceCustomFields(function(result) {
     $.each(result, function(index, cf) {
@@ -161,6 +162,8 @@ $(document).ready(function ()
 
   
   
+=======
+>>>>>>> parent of a0f3c73 (add country level support)
   $("#formatlink").attr({
     href: packagePath + "/downloads?file=example.csv&contentType=text/csv",
     target: "_blank",
@@ -514,6 +517,7 @@ new Vue({
 
             if (variants != null) {
 
+<<<<<<< HEAD
               if (variants.length == 6) {
                 var result = $.grep(allLocationVariants, function (e) { return e.Name == variants[5]; });
               
@@ -538,6 +542,11 @@ new Vue({
                   vm.all_variants.push({ 'Variants': [{ 'ID': '', 'Name': variants[1], 'GroupName': variants[0] }, { 'ID': '', 'Name': variants[3], 'GroupName': variants[2] }, { 'ID': '', 'Name': variants[5], 'GroupName': variants[4] }, { 'ID': groupId, 'GroupID': locationId, 'Name': variants[9], 'GroupName': 'Country' }], 'SKU': variants[8], 'Price': variants[7], 'StockLimited': true, 'StockQuantity': variants[6] });
                 
               }
+=======
+              variants.length == 4 ? vm.all_variants.push({ 'Variants': [{ 'ID': '', 'Name': variants[1], 'GroupName': variants[0] }], 'SKU': 'random', 'Price': variants[3] , 'StockLimited': true, 'StockQuantity': variants[2] }) : '';
+              variants.length == 6 ? vm.all_variants.push({ 'Variants': [{ 'ID': '', 'Name': variants[1], 'GroupName': variants[0] }, { 'ID': '', 'Name': variants[3], 'GroupName': $variants[2] }], 'SKU': 'random', 'Price': variants[5], 'StockLimited': true, 'StockQuantity': variants[4] }) : '';
+              variants.length == 8 ? vm.all_variants.push({ 'Variants': [{ 'ID': '', 'Name': variants[1], 'GroupName': variants[0] }, { 'ID': '', 'Name': variants[3], 'GroupName': variants[2] }, { 'ID': '', 'Name': variants[5], 'GroupName': variants[4] }], 'SKU': 'random', 'Price': variants[7], 'StockLimited': true, 'StockQuantity': variants[6] }) : '';
+>>>>>>> parent of a0f3c73 (add country level support)
             }
           
           });
@@ -551,9 +560,9 @@ new Vue({
             
             let customfields_values = [];
             
-            !details[Object.keys(details)[customfield]] == '' ? customfields_values.push(details[Object.keys(details)[customfield]]) : '';
+            !details[Object.keys(details)[customfield]] == '' ? customfields_values.push(details[Object.keys(details)[customfield]].trim()) : '';
 
-            let custom_code = allcustomfields.filter(custom => custom.Name == customfield_name)
+            let custom_code = allcustomfields.filter(custom => custom.Name == customfield_name.trim())
 
             let customfield_code = custom_code.length > 0 ? custom_code[0]['Code'] : '';
 
