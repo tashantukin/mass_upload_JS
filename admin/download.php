@@ -64,7 +64,7 @@ foreach ($result['Records'] as $customfield) {
   $referencetable == 'Items' ? $customfield_headers[] = 'Custom ' .  $customfield['Name'] : '';
 }
 
-$default_headers = array('Merchant ID', 'Category ID', 'Item Name', 'Image 1', 'Image 2', 'Image 3', 'Image 4', 'Image 5', 'Item Description', 'SKU', 'Currency', 'Price', 'Stock Quantity', 'Stock Limited', 'Variant 1', 'Variant 2', 'Variant 3');
+$default_headers = array('Merchant ID', 'Category ID', 'Item Name', 'Image 1', 'Image 2', 'Image 3', 'Image 4', 'Image 5', 'Item Description', 'SKU', 'Tags', 'Price', 'Stock Quantity', 'Stock Limited', 'Weight', 'Length', 'Width', 'Height', 'Variant 1', 'Variant 2', 'Variant 3');
 
 $all_headers = array_merge($default_headers, $customfield_headers);
 
@@ -75,24 +75,28 @@ for ($x = 1; $x <= 10; $x++) {
 
   // $itemID = '*';
   $merchants_id = $random_merchant[array_rand($random_merchant)];
-  $cats_id = $random_category[array_rand($random_category)];
+  $cats_id = 'sneakers';
   $item_name = 'Sample new Item ' . time() . $x;
-  $image_1 = 'https://imagesvc.meredithcorp.io/v3/mm/image?url=https%3A%2F%2Fstatic.onecms.io%2Fwp-content%2Fuploads%2Fsites%2F9%2F2020%2F09%2F11%2Fwhat-is-smooth-wine-FT-BLOG0920.jpg&q=85';
-  $image_2 = 'https://images.mktw.net/im-389977?width=700&height=467';
-  $image_3 = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSBVM3pWXmvlL21xKamVtgXN7tFifgsJMHoLQ&usqp=CAU';
+  $image_1 = 'https://down-my.img.susercontent.com/file/sg-11134201-23030-64aodgrnygov67';
+  $image_2 = 'https://img.giglio.com/images/prodPage/E18077.001_1.jpg';
+  $image_3 = 'https://havanna-shoes.dk/cdn/shop/files/TRINITY_BEIGE2_jpg.png?v=1687247781';
   $image_4 = 'sample url link';
   $image_5 = 'sample url link';
   $item_desc = 'Item Description, supports, adding, a comma now' . $x;
   $SKU = 'Item SKU ' . $x;
-  $currency = $currencycode;
-  $price = 100 + $x;
+  $currency = 'Tag ' . $x ;
+  $price = 0;
   $stock_qty = 10 * $x;
   $stock_limited = $random_limit[array_rand($random_limit)];
-  $variant1 = 'Color/Red/Size/M/Type/B/10/20/SKU/Country';
-  $variant2 = 'Color/Blue/Size/S/Type/A/10/30/SKU/Country';
-  $variant3 = 'Color/Green/Size/L/Type/A/20/40/SKU/Country';
+  $weight = 'parent item weight';
+  $length = 0;
+  $width = 0;
+  $height = 0;
+  $variant1 = 'Color/Red/Size/M/Type/B/STOCKS/PRICE/SKU/W/L/H/WEIGHT';
+  $variant2 = 'Color/Blue/Size/S/Type/A/STOCKS/PRICE/SKU/W/L/H/WEIGHT';
+  $variant3 = 'Color/Green/Size/L/Type/A/STOCKS/PRICE/SKU/W/L/H/WEIGHT';
 
-  $itemsRows = array($merchants_id,  $cats_id, $item_name, $image_1, $image_2, $image_3,  $image_4, $image_5, $item_desc, $SKU, $currency, $price, $stock_qty, $stock_limited, $variant1, $variant2, $variant3);
+  $itemsRows = array($merchants_id,  $cats_id, $item_name, $image_1, $image_2, $image_3,  $image_4, $image_5, $item_desc, $SKU, $currency, $price, $stock_qty, $stock_limited, $weight, $length,  $width, $height, $variant1, $variant2, $variant3);
   fputcsv($fh_items,  $itemsRows);
 
   echo json_encode(['rows' => $itemsRows]);
