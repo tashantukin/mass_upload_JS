@@ -4,13 +4,15 @@ $content = json_decode($contentBodyJson, true);
 $items_id = $content['items'];
 $dirItems =  realpath("downloads/uploaded_items.csv");
 $fh_items = fopen($dirItems, 'w');
-echo json_encode(['result' => $items_id]);
 
+fputcsv($fh_items, $items_id);
+//$all_items = [];
+// foreach ($items_id as $id) {
 
-foreach ($items_id as $id) {
-    fputcsv($fh_items, $id);
-}
+//     //$all_items[] = $id;
+
+// }
+
+//echo json_encode(['result' => $all_items]);
 //close file stream
 fclose($fh_items);
-
-// $csv = array_map('str_getcsv', file('data.csv')
