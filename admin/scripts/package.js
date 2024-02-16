@@ -11,7 +11,6 @@ var isValid = false;
 let allcategories = [];
 let allcustomfields = [];
 let allLocationVariants = [];
-let categoryData = [];
 
 
 function getCookie(name){
@@ -60,9 +59,7 @@ function loadAllCategories()
        $.each(response.data.Records, function (index, category)
        {
          allcategories.push(category['ID']);
-         categoryData.push({'ID': category['ID'], 'Name' : category['Name'] })
-
-         console.log(categoryData)
+ 
        });
        
       }
@@ -70,16 +67,6 @@ function loadAllCategories()
     }
   })
 }
-
-function findCategoryId(categoryName){
-
-  return categoryData.find(item => {
-    return item.Name.toLowerCase() == categoryName
- })
-}
-
-
-
 function loadLocationVariants(locationId)
 {
   var data = { locationId };
@@ -242,9 +229,6 @@ new Vue({
       all_variants: [],
       all_customfield_header: [],
       all_customfields: [],
-      //tags
-      tags_header: [],
-      all_tags: [],
       media: [],
       failed_items: [],
       success_items: [],
@@ -485,17 +469,13 @@ new Vue({
         header.includes('Variant') ? vm.variants_header.push(index) : '';
         header.includes('Custom') ? vm.customfields_header.push(index) : '';
         header.includes('Custom') ? vm.all_customfield_header.push(header) : '';
-      
-
-
       });
       const variant_last_index = [...vm.variants_header].pop() + 1;
       const variant_first_index = [...vm.variants_header].shift();
 
       const custom_last_index = [...vm.customfields_header].pop() + 1;
       const custom_first_index = [...vm.customfields_header].shift();
-    
-      
+        
       var allPromises = [];
    
       vm.csvcontent.forEach(function (line)
@@ -523,11 +503,7 @@ new Vue({
           if (categories.length != 0 || categories != undefined || categories != '') {
             categories.forEach(function (categoryID)
             {
-              //console.log({categoryID})
-              let categoryId = findCategoryId(categoryID.toLowerCase());
-
-              //console.log({categoryId})
-              allcategories.includes(categoryId.ID) ? all_categories.push({ 'ID': categoryId.ID }) : invalid_categories_count++;
+              allcategories.includes(categoryID) ? all_categories.push({ 'ID': categoryID }) : invalid_categories_count++;
             });
           }
           //variants
@@ -536,18 +512,33 @@ new Vue({
             
             let variants = !details[Object.keys(details)[variant]] == 0 ? details[Object.keys(details)[variant]].split("/") : null;
 
-            //console.log(`var len ${variants.length}`);
-
-
             if (variants != null) {
 
-              variants.length == 9 ? vm.all_variants.push({ 'Variants': [{ 'ID': '', 'Name': variants[1], 'GroupName': variants[0] }], 'SKU': variants[4] , 'Price': variants[3] , 'StockLimited': true, 'StockQuantity': variants[2], 'Weight': variants[8] , 'Length' :variants[5] , 'Width': variants[6], 'Height' : variants[7]  }) : '';
-              variants.length == 11 ? vm.all_variants.push({ 'Variants': [{ 'ID': '', 'Name': variants[1], 'GroupName': variants[0] }, { 'ID': '', 'Name': variants[3], 'GroupName': variants[2] }],  'SKU': variants[6], 'Price': variants[5], 'StockLimited': true, 'StockQuantity': variants[4], 'Weight': variants[10], 'Length' :variants[7], 'Width': variants[8], 'Height' : variants[9] }) : '';
-              variants.length == 13 ? vm.all_variants.push({ 'Variants': [{ 'ID': '', 'Name': variants[1], 'GroupName': variants[0] }, { 'ID': '', 'Name': variants[3], 'GroupName': variants[2] }, { 'ID': '', 'Name': variants[5], 'GroupName': variants[4] }], 'SKU': variants[8], 'Price': variants[7], 'StockLimited': true, 'StockQuantity': variants[6], 'Weight': variants[12], 'Length' :variants[9], 'Width': variants[10], 'Height' : variants[11] }) : '';
+              if (variants.length == 6) {
+                var result = $.grep(allLocationVariants, function (e) { return e.Name == variants[5]; });
+              
+                var groupId = result[0]  ? result[0].ID : '';
+                
+                vm.all_variants.push({ 'Variants': [{ 'ID': '', 'Name': variants[1], 'GroupName': variants[0] }, { 'ID': groupId, 'GroupID': locationId, 'Name': variants[5], 'GroupName': 'Country' }], 'SKU': variants[4], 'Price': variants[3], 'StockLimited': true, 'StockQuantity': variants[2] });
+                
+              }
+              //get the location cf
+              if (variants.length == 8) {
+                var result = $.grep(allLocationVariants, function (e) { return e.Name == variants[7]; });
+                var groupId = result[0]  ? result[0].ID : '';
+                
+                  vm.all_variants.push({ 'Variants': [{ 'ID': '', 'Name': variants[1], 'GroupName': variants[0] }, { 'ID': '', 'Name': variants[3], 'GroupName': variants[2] }, { 'ID': groupId, 'GroupID': locationId, 'Name': variants[7], 'GroupName': 'Country' }], 'SKU': variants[6], 'Price': variants[5], 'StockLimited': true, 'StockQuantity': variants[4] });
+                
+              }
+              if (variants.length == 10) {
+                var result = $.grep(allLocationVariants, function (e) { return e.Name == variants[9]; });
 
+                var groupId = result[0]  ? result[0].ID : '';
+               
+                  vm.all_variants.push({ 'Variants': [{ 'ID': '', 'Name': variants[1], 'GroupName': variants[0] }, { 'ID': '', 'Name': variants[3], 'GroupName': variants[2] }, { 'ID': '', 'Name': variants[5], 'GroupName': variants[4] }, { 'ID': groupId, 'GroupID': locationId, 'Name': variants[9], 'GroupName': 'Country' }], 'SKU': variants[8], 'Price': variants[7], 'StockLimited': true, 'StockQuantity': variants[6] });
+                
+              }
             }
-
-           // console.log(`all_variants  ${vm.all_variants}`);
           
           });
           //custom fields
@@ -603,11 +594,11 @@ new Vue({
               vm.failed_items.push(items);
               vm.failed_all++;
               break;
-            // case details[Object.keys(details)[11]] == '':
-            //   vm.upload_error.push({ 'Name': details['Item Name'], 'error': 'Price is empty', 'code': 'Failed' })
-            //   vm.failed_items.push(items);
-            //   vm.failed_all++;
-            //   break;
+            case details[Object.keys(details)[11]] == '':
+              vm.upload_error.push({ 'Name': details['Item Name'], 'error': 'Price is empty', 'code': 'Failed' })
+              vm.failed_items.push(items);
+              vm.failed_all++;
+              break;
             
             default:
 
@@ -619,22 +610,18 @@ new Vue({
                 'BuyerDescription': details['Item Description'],
                 'SellerDescription': details['Item Description'],
                 'Price': details['Price'],
-                'Weight': details['Weight'],
-                'Length': details['Length'],
-                'Width' : details['Width'],
-                'Height' : details['Height'],
                 'PriceUnit': null,
                 'StockLimited': details['Stock Limited'],
                 'StockQuantity': details['Stock Quantity'],
                 'IsVisibleToCustomer': true,
                 'Active': true,
                 'IsAvailable': '',
-                'CurrencyCode': 'SGD',
+                'CurrencyCode': details['Currency'],
                 'Categories': all_categories,
                 'ShippingMethods': null,
                 'PickupAddresses': null,
                 'Media': vm.media,
-                'Tags': details['Tags'].split('/'),
+                'Tags': null,
                 'CustomFields': vm.all_customfields,
                 'ChildItems': vm.all_variants
               }
